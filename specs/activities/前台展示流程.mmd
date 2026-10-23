@@ -1,0 +1,31 @@
+%% ═══ 區段一：Activity 標頭與 Actor 宣告 ═══
+%% [ACTIVITY] 前台展示流程
+%% [ACTOR] Visitor -> {specs/actors/訪客.md}
+
+flowchart TD
+
+%% ═══ 區段二：節點定義 ═══
+
+    Start(( ))
+
+    %% [STEP:1] @Visitor {features/visitor/universe/瀏覽3D宇宙.feature}
+    S1["@Visitor<br/>進入網站，3D 宇宙自動慢速旋轉<br/>（ME Planet + 所有 Satellite 環繞）"]
+
+    %% [STEP:2] @Visitor {features/visitor/universe/探索衛星.feature}
+    S2["@Visitor<br/>點擊 Satellite → 相機飛入近景<br/>SubSatellite 環繞在周圍顯示"]
+
+    %% [STEP:3] @Visitor {features/visitor/universe/探索子衛星.feature}
+    S3["@Visitor<br/>瀏覽該 Satellite 下的 SubSatellite 清單"]
+
+    %% [STEP:4] @Visitor {features/visitor/universe/查看段落.feature}
+    S4["@Visitor<br/>點擊 SubSatellite → Modal 彈出<br/>顯示 Paragraph 筆記/成果"]
+
+    End((( )))
+
+%% ═══ 區段三：邊定義 ═══
+
+    Start --> S1
+    S1 --> S2
+    S2 --> S3
+    S3 --> S4
+    S4 --> End

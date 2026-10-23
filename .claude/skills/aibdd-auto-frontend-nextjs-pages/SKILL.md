@@ -255,6 +255,93 @@ const { scene } = useGLTF('/models/earth.glb')
   {typeof WebGLRenderingContext !== 'undefined' ? <Canvas3D>...</Canvas3D> : <img src="/fallback.jpg" />}
   ```
 
+#### Portfolio 場景結構（tech_flavor: threejs + portfolio_type: isometric_diorama）
+
+當頁面為 **Isometric Miniature World 個人作品集**時，將 5 個內容區域映射為 3D 場景的子元件：
+
+| 區域 | 代表物件 | R3F 元件名稱 |
+|------|---------|------------|
+| About Me | 個人特色起始區域（住宅 / 廣場） | `<AboutZone>` |
+| Projects | 展示建築或展區 | `<ProjectsZone>` |
+| Experience | 道路或分段場景 | `<ExperienceZone>` |
+| Skills | 有意義的 3D 工具物件 | `<SkillsZone>` |
+| Contact | 探索終點（信箱 / 燈塔） | `<ContactZone>` |
+
+**元件目錄慣例：**
+
+```
+src/
+├── scenes/
+│   ├── PortfolioScene.tsx        ← 總場景，含 Camera + Lighting + 所有 Zone
+│   ├── zones/
+│   │   ├── AboutZone.tsx
+│   │   ├── ProjectsZone.tsx
+│   │   ├── ExperienceZone.tsx
+│   │   ├── SkillsZone.tsx
+│   │   └── ContactZone.tsx
+│   └── shared/
+│       ├── IsometricCamera.tsx   ← OrthographicCamera + 30–45° 俯視固定設定
+│       ├── SceneLighting.tsx     ← ambientLight + directionalLight + ContactShadows
+│       └── IdleAnimations.tsx    ← 極輕微環境動畫（樹木搖擺、旗幟飄動）
+├── components/
+│   ├── portfolio/
+│   │   ├── ZoneInfoPanel.tsx     ← 點擊 Zone 後出現的 2D 資訊面板
+│   │   ├── FixedNav.tsx          ← 固定導覽選單（不依賴 3D 操作）
+│   │   └── WebGLFallback.tsx     ← 靜態替代頁面
+```
+
+**互動設計實作模式：**
+
+```typescript
+// Hover：Zone 微幅浮起 + 柔和高亮
+function AboutZone() {
+  const [hovered, setHovered] = useState(false)
+  const meshRef = useRef<Mesh>(null)
+
+  useFrame(() => {
+    if (meshRef.current) {
+      meshRef.current.position.y = THREE.MathUtils.lerp(
+        meshRef.current.position.y,
+        hovered ? 0.15 : 0,
+        0.08
+      )
+    }
+  })
+
+  return (
+    <mesh
+      ref={meshRef}
+      onPointerOver={() => setHovered(true)}
+      onPointerOut={() => setHovered(false)}
+    >
+      {/* Zone 幾何體 */}
+    </mesh>
+  )
+}
+
+// Click：攝影機平滑飛到對應 Zone，開啟資訊面板
+function PortfolioScene({ onZoneClick }: { onZoneClick: (zone: string) => void }) {
+  // 使用 GSAP 或 @react-spring/three 做平滑相機移動
+  // 點擊後 onZoneClick(zoneName) → 父元件開啟 ZoneInfoPanel
+}
+```
+
+**Idle Animation 原則：**
+- 使用 `useFrame` 實作極輕微的環境動畫（振幅 < 0.05、週期 > 3s）
+- 偵測 `prefers-reduced-motion`，為 true 時跳過所有 idle animation：
+  ```typescript
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  ```
+
+**固定導覽選單：**
+- `<FixedNav>` 永遠可見，不在 Canvas 內，使用者不必操作 3D 即可跳轉各區域
+- 選單點擊同時觸發相機移動 + 開啟對應 ZoneInfoPanel
+
+**Mobile 處理：**
+- 觸控操作：`onPointerDown` / `onPointerUp` 取代 hover 行為
+- 減少場景細節（降低 polygon count，減少 idle animations）
+- 必要時以 `<WebGLFallback>` 顯示靜態版本
+
 ### 步驟 4D：樣式遷移
 
 從 layout.html 遷移樣式，優先順序：

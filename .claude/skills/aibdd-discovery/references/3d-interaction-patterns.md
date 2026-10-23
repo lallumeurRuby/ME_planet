@@ -94,6 +94,69 @@ Feature: 相機視角控制
       Then 場景應顯示從北極俯視的地球
 ```
 
+## Portfolio Diorama 互動模式（portfolio_type: isometric_diorama）
+
+當專案為 Isometric Miniature World 個人作品集時，使用以下詞彙與模式。
+
+### 額外動詞
+
+| 操作類型 | Gherkin 句型 |
+|---------|-------------|
+| 懸停 Portfolio Zone | `When 使用者 懸停在 "<Zone 名稱>" 區域上` |
+| 點擊 Portfolio Zone | `When 使用者 點擊 "<Zone 名稱>" 區域` |
+| 透過固定導覽跳轉 | `When 使用者 點擊導覽選單中的 "<區域名稱>"` |
+
+| 回饋類型 | Gherkin 句型 |
+|---------|-------------|
+| Zone 浮起 | `Then "<Zone 名稱>" 區域應微幅浮起並顯示高亮` |
+| 攝影機移動 | `Then 攝影機應平滑移動到 "<Zone 名稱>" 區域` |
+| 開啟資訊面板 | `Then 應開啟 "<Zone 名稱>" 的資訊面板` |
+| Idle 動畫暫停 | `Then 場景的環境動畫應暫停（Reduced Motion 模式）` |
+
+### Feature File 模式（Portfolio 專用）
+
+```gherkin
+@ignore @command
+Feature: Portfolio Zone 探索
+
+  Rule: 後置（狀態）- 點擊 Zone 後攝影機移動並開啟資訊面板
+
+    Example: 點擊 Projects 區域
+      Given 3D 場景已完成渲染
+      When 使用者 點擊 "Projects" 區域
+      Then 攝影機應平滑移動到 "Projects" 區域
+      And 應開啟 "Projects" 的資訊面板
+
+  Rule: 後置（狀態）- 懸停 Zone 時出現浮起高亮
+
+    Example: 懸停 About Me 區域
+      Given 3D 場景已完成渲染
+      When 使用者 懸停在 "About Me" 區域上
+      Then "About Me" 區域應微幅浮起並顯示高亮
+
+@ignore @query
+Feature: 固定導覽選單
+
+  Rule: 後置（狀態）- 導覽選單永遠可見，不依賴 3D 操作
+
+    Example: 透過導覽跳轉到 Experience
+      Given 使用者位於頁面任意位置
+      When 使用者 點擊導覽選單中的 "Experience"
+      Then 攝影機應平滑移動到 "Experience" 區域
+      And 應開啟 "Experience" 的資訊面板
+
+@ignore @query
+Feature: Reduced Motion 支援
+
+  Rule: 後置（狀態）- 偵測到 prefers-reduced-motion 時停用動畫
+
+    Example: Reduced Motion 模式下場景靜止
+      Given 使用者系統開啟了 prefers-reduced-motion
+      When 使用者訪問作品集頁面
+      Then 場景的環境動畫應暫停（Reduced Motion 模式）
+      And 3D 場景應完成渲染（無載入動畫）
+```
+
 ## 測試策略說明
 
 > **重要**：3D Canvas 內容是像素，無法用 CSS selector 定位。
