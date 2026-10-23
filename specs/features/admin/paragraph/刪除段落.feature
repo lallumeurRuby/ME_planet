@@ -5,6 +5,8 @@ Feature: 刪除段落
     Given 擁有者已以密碼登入並取得有效 JWT
     And 系統中存在至少一個 Paragraph
 
+  Rule: 前置（身份）- 未帶 JWT 或 JWT 無效／過期（有效期 24 小時）時拒絕操作，回傳 401 Unauthorized
+
   Rule: 前置（確認）- 刪除前必須顯示確認對話框，使用者主動確認後才執行刪除
 
   Rule: 前置（存在）- 目標 Paragraph 必須存在

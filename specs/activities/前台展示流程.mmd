@@ -14,11 +14,8 @@ flowchart TD
     %% [STEP:2] @Visitor {features/visitor/universe/探索衛星.feature}
     S2["@Visitor<br/>點擊 Satellite → 相機飛入近景<br/>SubSatellite 環繞在周圍顯示"]
 
-    %% [STEP:3] @Visitor {features/visitor/universe/探索子衛星.feature}
-    S3["@Visitor<br/>瀏覽該 Satellite 下的 SubSatellite 清單"]
-
-    %% [STEP:4] @Visitor {features/visitor/universe/查看段落.feature}
-    S4["@Visitor<br/>點擊 SubSatellite → Modal 彈出<br/>顯示 Paragraph 筆記/成果"]
+    %% [STEP:3] @Visitor {features/visitor/universe/查看段落.feature}
+    S3["@Visitor<br/>點擊 SubSatellite → Modal 彈出<br/>顯示 Paragraph 筆記/成果"]
 
     End((( )))
 
@@ -27,5 +24,4 @@ flowchart TD
     Start --> S1
     S1 --> S2
     S2 --> S3
-    S3 --> S4
-    S4 --> End
+    S3 --> End

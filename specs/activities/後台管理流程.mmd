@@ -15,7 +15,7 @@ flowchart TD
     D1a{"選擇管理對象"}
 
     %% ── Satellite 管理 ──
-    %% [STEP:2] @Owner {features/admin/satellite/列出衛星.feature}
+    %% [STEP:2] @Owner {features/visitor/universe/瀏覽3D宇宙.feature}
     S2["@Owner<br/>列出 Satellite 清單"]
 
     %% [DECISION:2a] 選擇 Satellite 操作
@@ -36,15 +36,14 @@ flowchart TD
     %% [BRANCH:2b:是] @Owner {features/admin/satellite/刪除衛星.feature}
     B2b_empty["@Owner<br/>Satellite 刪除成功"]
 
-    %% 刪除失敗時回傳 409 Conflict（子資料非空）
-    %% [BRANCH:2b:否]
-    B2b_notempty["系統拒絕刪除<br/>（SubSatellite 非空）"]
+    %% [BRANCH:2b:否] @Owner {features/admin/satellite/刪除衛星.feature}
+    B2b_notempty["@Owner<br/>刪除被拒（409，SubSatellite 非空）"]
 
     %% [MERGE:2a]
     M2a(( ))
 
     %% ── SubSatellite 管理 ──
-    %% [STEP:3] @Owner {features/admin/sub_satellite/列出子衛星.feature}
+    %% [STEP:3] @Owner {features/visitor/universe/探索衛星.feature}
     S3["@Owner<br/>選擇 Satellite，列出 SubSatellite"]
 
     %% [DECISION:3a] 選擇 SubSatellite 操作
@@ -65,15 +64,14 @@ flowchart TD
     %% [BRANCH:3b:是] @Owner {features/admin/sub_satellite/刪除子衛星.feature}
     B3b_empty["@Owner<br/>SubSatellite 刪除成功"]
 
-    %% 刪除失敗時回傳 409 Conflict（子資料非空）
-    %% [BRANCH:3b:否]
-    B3b_notempty["系統拒絕刪除<br/>（Paragraph 非空）"]
+    %% [BRANCH:3b:否] @Owner {features/admin/sub_satellite/刪除子衛星.feature}
+    B3b_notempty["@Owner<br/>刪除被拒（409，Paragraph 非空）"]
 
     %% [MERGE:3a]
     M3a(( ))
 
     %% ── Paragraph 管理 ──
-    %% [STEP:4] @Owner {features/admin/paragraph/列出段落.feature}
+    %% [STEP:4] @Owner {features/visitor/universe/查看段落.feature}
     S4["@Owner<br/>選擇 SubSatellite，列出 Paragraph"]
 
     %% [DECISION:4a] 選擇 Paragraph 操作
