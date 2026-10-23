@@ -1,0 +1,48 @@
+// ME Planet — Entity Relationship Model
+// 來源：specs/features/**/*.feature、specs/clarify/2026-10-23-1605.md
+
+Table satellites {
+  id          integer      [pk, increment]
+  name        varchar(50)  [not null, unique, note: 'max length: 50；全域唯一，重複回 409']
+  created_at  timestamp    [not null, default: `now()`, note: '清單依 created_at 舊→新排序']
+
+  Note: '知識領域（衛星）。刪除前 sub_satellites 必須為空，否則回 409'
+}
+
+Table sub_satellites {
+  id            integer      [pk, increment]
+  satellite_id  integer      [not null]
+  name          varchar(50)  [not null, note: 'max length: 50；同一 Satellite 內唯一，重複回 409']
+  created_at    timestamp    [not null, default: `now()`, note: '清單依 created_at 舊→新排序']
+
+  indexes {
+    (satellite_id, name) [unique]
+  }
+
+  Note: '子分類知識（子衛星）。刪除前 paragraphs 必須為空，否則回 409'
+}
+
+Table paragraphs {
+  id                integer       [pk, increment]
+  sub_satellite_id  integer       [not null]
+  title             varchar(100)  [not null, note: 'max length: 100；不要求唯一']
+  summary           text          [null, note: '選填']
+  content           text          [not null, note: 'Rich text（WYSIWYG 輸出，HTML 或 JSON delta）']
+  created_at        timestamp     [not null, default: `now()`, note: '清單依 created_at 新→舊排序']
+  updated_at        timestamp     [not null, default: `now()`, note: '編輯成功時更新']
+
+  Note: '學習筆記／成果（段落）'
+}
+
+Table owner_credentials {
+  id               integer    [pk, increment]
+  password_hash    varchar    [not null]
+  failed_attempts  integer    [not null, default: 0, note: '連續密碼錯誤次數；登入成功歸零']
+  locked_until     timestamp  [null, note: '連續錯誤 5 次後設為 now + 15 分鐘；期間登入一律回 429']
+
+  Note: '擁有者登入憑證與鎖定狀態，僅單筆資料。JWT 有效期 24 小時（不落庫）'
+}
+
+// 刪除護欄：不 cascade，子資料非空時拒絕刪除
+Ref: sub_satellites.satellite_id > satellites.id [delete: restrict]
+Ref: paragraphs.sub_satellite_id > sub_satellites.id [delete: restrict]

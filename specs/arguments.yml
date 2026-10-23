@@ -15,10 +15,10 @@ MAX_QUESTIONS_PER_ROUND: 10
 ACTIVITIES_DIR: ${SPECS_ROOT_DIR}/activities
 
 # api.yml 的存放目錄
-API_SPECS_DIR: ${SPECS_ROOT_DIR}
+API_SPECS_DIR: ${SPECS_ROOT_DIR}/api
 
 # erm.dbml 的存放目錄
-ENTITY_SPECS_DIR: ${SPECS_ROOT_DIR}
+ENTITY_SPECS_DIR: ${SPECS_ROOT_DIR}/entity
 
 # ── 後端專案根目錄 ──────────────────────────────────────
 BACKEND_DIR: backend

@@ -11,7 +11,7 @@
 
 | 類型 | 數量 |
 |------|------|
-| Create | 22 |
+| Create | 23 |
 | Modify | 0 |
 | Delete | 0 |
 
@@ -24,6 +24,7 @@
 | create | Satellite table | 知識領域實體：id, name（全域唯一） |
 | create | SubSatellite table | 子分類知識實體：id, name, satellite_id（FK）；(satellite_id, name) 唯一 |
 | create | Paragraph table | 學習筆記/成果實體：id, title, summary（選填）, content（rich text）, created_at, updated_at, sub_satellite_id（FK） |
+| create | owner_credentials table | 單筆：password_hash, failed_attempts, locked_until（登入鎖定，Phase 02 澄清新增） |
 | create | 刪除護欄約束 | Satellite/SubSatellite 刪除前需子資料為空（NOT cascade delete） |
 
 ---
