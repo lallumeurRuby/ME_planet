@@ -109,6 +109,33 @@ description: >
 3. **語意化拆解**：按 UI 職責拆分（Header、Sidebar、Content、Table、Form、Modal）。
 4. **共用元件提取**：多頁面重複出現的 UI 區塊提取為 `src/components/` 下的共用元件。
 
+### 3D 場景拆解（tech_flavor: threejs 時啟用）
+
+若頁面含 3D 場景，在標準 2D 拆解之前先區分兩個層：
+
+| 層 | 技術 | 說明 |
+|----|------|------|
+| **3D Canvas 層** | R3F `<Canvas>` | 渲染 WebGL 場景，使用 `Canvas3D` wrapper |
+| **2D Overlay 層** | HTML / CSS | 浮動在 Canvas 上的 UI（資訊卡、按鈕、HUD） |
+
+拆解步驟：
+1. 從 layout.html / 需求描述識別 3D 場景範圍（全螢幕 or 局部）
+2. 將 3D 場景轉為 R3F 元件樹（`<Canvas3D>`, `<Scene>`, `<Model>`, `<Light>`）
+3. 將 2D HTML 部分放在 R3F `<Html>` 元件內（若位於 Canvas 內）或獨立 `div` overlay
+4. 確定資料流：哪些資料需要 API（走 MSW）？哪些是純 3D 場景狀態？
+
+```
+PlanetPage
+├── Canvas3D                    ← 3D Canvas 層（全螢幕）
+│   └── PlanetScene             ← 場景元件（src/scenes/）
+│       ├── PlanetMesh          ← 3D 幾何體 + 材質
+│       ├── AtmosphereEffect    ← 後處理或 mesh overlay
+│       ├── OrbitControls       ← 相機控制
+│       └── <Html> (drei)       ← 3D 場景內的 HTML 標籤
+└── PlanetInfoOverlay           ← 2D Overlay 層（fixed position）
+    └── PlanetInfoCard          ← 行星資訊卡片（Domain 元件）
+```
+
 ### 元件目錄結構
 
 ```
@@ -159,12 +186,74 @@ import type { LeadResponse, CreateLeadRequest } from '@/lib/types/lead.schema'
 
 ### 步驟 4C：實作頁面元件
 
+#### 標準 2D 頁面
+
 1. 從 `layout.html` 對應區塊提取 HTML 結構
 2. 將靜態 HTML 轉為 React JSX
 3. 用 `useState` / `useEffect` / React Server Components 實現動態行為
 4. 從 API client 獲取資料（Server Component: 直接 await / Client Component: useEffect）
 5. 實作使用者操作的 handler（form submit、button click）
 6. 加入 Loading / Empty / Error 狀態處理
+
+#### 3D 場景頁面（tech_flavor: threejs 時）
+
+若頁面含 3D 場景，使用以下模式取代或補充標準流程：
+
+**3D 場景元件（放在 `${THREEJS_SCENES_DIR}/`）：**
+
+```typescript
+'use client'
+import { useFrame, useLoader } from '@react-three/fiber'
+import { OrbitControls, useGLTF, Environment, Html } from '@react-three/drei'
+import { useRef } from 'react'
+import type { Mesh } from 'three'
+
+export default function PlanetScene({ data }: { data: PlanetData }) {
+  const meshRef = useRef<Mesh>(null)
+  // useFrame 取代 requestAnimationFrame（R3F render loop）
+  useFrame((_, delta) => {
+    if (meshRef.current) meshRef.current.rotation.y += delta * 0.1
+  })
+  return (
+    <>
+      <ambientLight intensity={0.4} />
+      <directionalLight position={[5, 5, 5]} intensity={1.5} castShadow />
+      <Environment preset="night" />
+      {/* 3D 模型：GLTF/GLB 放 public/models/，用 useGLTF 載入 */}
+      {/* 相機控制：OrbitControls（禁用 pan，限制 polar angle 防止翻轉） */}
+      <OrbitControls enablePan={false} minPolarAngle={Math.PI * 0.25} maxPolarAngle={Math.PI * 0.75} />
+      {/* 3D 場景內的 HTML 標籤（用 drei Html，保持在 3D 座標系中） */}
+      <Html position={[2, 1, 0]}><span className="label">{data.name}</span></Html>
+    </>
+  )
+}
+```
+
+**R3F 限制注意事項：**
+
+| 標準 React | R3F 等效用法 |
+|-----------|-------------|
+| `useEffect` + `requestAnimationFrame` | `useFrame` hook |
+| `ref.current.style` | `ref.current.position / rotation / scale` |
+| CSS transition / animation | `@react-spring/three` 或 `drei useAnimations` |
+| `<img>` | `useTexture`（drei）或 `TextureLoader` |
+| `<video>` | `useVideoTexture`（drei） |
+
+**動態 3D 資料（API 資料驅動場景）：**
+
+```typescript
+// 動態資料（行星位置、標記點）走 API → MSW mock
+const { data: planets } = useSWR('/api/planets', fetcher)
+// 靜態 3D 資源（GLTF、貼圖）不走 API，直接 public/ 目錄
+const { scene } = useGLTF('/models/earth.glb')
+```
+
+**效能保護：**
+- 模型面數上限 50k polygons；貼圖最大 2048×2048
+- 在 `Canvas3D` 外提供 WebGL fallback（靜態圖片），對不支援 WebGL 的環境：
+  ```tsx
+  {typeof WebGLRenderingContext !== 'undefined' ? <Canvas3D>...</Canvas3D> : <img src="/fallback.jpg" />}
+  ```
 
 ### 步驟 4D：樣式遷移
 

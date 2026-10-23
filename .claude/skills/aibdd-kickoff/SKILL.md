@@ -53,9 +53,28 @@ user-invocable: true
 | B | Java（Spring Boot + JPA + Cucumber） |
 | C | TypeScript（NestJS + TypeORM + CucumberJS） |
 | D | Frontend Only（React + MSW + Playwright） |
+| E | Frontend Only + Three.js（React + R3F + drei + MSW + Playwright） |
 
 回覆選項代號即可，或說「yes」接受推薦。
 ```
+
+### Q1 = D（Frontend Only）追加詢問
+
+選 D 後插入 Q1.5：
+
+```
+[Q1.5/3] 這個前端專案是否需要 3D 渲染（Three.js / WebGL）？
+
+| 選項 | 說明 |
+|------|------|
+| A | 不需要（標準 CRUD 頁面） |
+| B | 需要（使用 React Three Fiber + @react-three/drei） |
+
+回覆選項代號即可，或說「no」選 A。
+```
+
+- Q1.5 = A → 維持 D（Frontend Only）流程
+- Q1.5 = B → 等同 E（Frontend Only + Three.js）
 
 ---
 
@@ -107,6 +126,10 @@ user-invocable: true
 ```
 
 ### Q1 = D（Frontend Only）
+
+插入 Q1.5 後，根據回答決定走 D 或 E 流程，然後跳過 Q2，直接進入 Q3。
+
+### Q1 = E（Frontend Only + Three.js）
 
 跳過 Q2（Frontend 無後端測試策略選擇），直接進入 Q3。
 
@@ -189,6 +212,8 @@ user-invocable: true
 ---
 
 **Convention 對照表 + arguments.yml 範例**：Read `references/convention-mapping.md`（共用參數、各技術堆疊路徑、arguments.yml 範例、Starter Skill 對照表）。
+
+> Q1 = E 或 Q1.5 = B 時，Q3 展示的推導參數需額外包含 `THREEJS_SCENES_DIR`、`THREEJS_MODELS_DIR`、`THREEJS_SHADERS_DIR`、`THREEJS_TEXTURES_DIR`。
 
 ---
 

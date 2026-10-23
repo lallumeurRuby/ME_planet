@@ -39,3 +39,18 @@ Interpret creatively and make unexpected choices that feel genuinely designed fo
 **IMPORTANT**: Match implementation complexity to the aesthetic vision. Maximalist designs need elaborate code with extensive animations and effects. Minimalist or refined designs need restraint, precision, and careful attention to spacing, typography, and subtle details. Elegance comes from executing the vision well.
 
 Remember: Claude is capable of extraordinary creative work. Don't hold back, show what can truly be created when thinking outside the box and committing fully to a distinctive vision.
+
+## 3D Design Aesthetics (Three.js / R3F)
+
+When the interface involves a 3D canvas, apply an additional design layer:
+
+- **Scene Composition**: Consider Camera FOV (narrow = telephoto drama, wide = immersive), depth staging (foreground / midground / background objects), and spatial hierarchy that guides attention.
+- **Lighting Design**: Combine ambient (base fill), directional (sun/key light), and point lights (local accents) intentionally. Shadows add weight; bloom adds magic. Avoid flat, uniformly-lit scenes.
+- **Material Quality**: Use PBR materials with purposeful `metalness` and `roughness` values. Add environment maps for reflections. Normal maps for surface micro-detail without polygon cost.
+- **Motion & Animation**: Use `useFrame` for continuous motion (rotation, float, particle drift). Prefer eased, organic motion over linear transforms. Camera fly-throughs should decelerate on arrival.
+- **2D ↔ 3D Transitions**: Layer HTML overlays (`<Html>` from drei) for UI elements inside the canvas. Transition between 2D panels and 3D scenes with View Transitions or GSAP timeline.
+- **Performance Budget**: Design within constraints — 50k polygons per model, textures ≤ 2048×2048, target 60fps desktop / 30fps mobile. Use LOD (Level of Detail) when objects are distant. Instancing for repeated geometry.
+- **Fallback Design**: Always design a graceful static fallback (poster image or CSS illustration) for browsers where WebGL is unavailable or too slow.
+
+**CRITICAL for 3D**: The "aesthetic direction" must unify both the 3D scene and the 2D HTML overlay. A brutalist 2D UI clashes with a soft organic 3D scene — commit to one visual language across both layers.
+

@@ -11,4 +11,9 @@
 | F5 | **跨功能一致性** | 同一術語/錯誤訊息/Key 識別方式在不同 .feature 之間是否一致？ | userId 在 A 用 name，在 B 用 ID |
 | F6 | **必要參數 Rule** | 是否有「前置（參數）- 必要參數必須提供」的 Rule？ | 缺少任何必填參數的驗證 Rule |
 
+| F7 | **3D 互動覆蓋率**（僅 tech_flavor: threejs） | 場景載入、物件點擊、相機控制、WebGL fallback 四類行為是否都有 Rule？ | 有點擊互動卻沒有 fallback；相機旋轉無角度限制驗證 |
+
 對 `Missing` / `Partial` 面向，補寫便條紙（CiC 品質標準），重新進入澄清循環。所有面向 `Clear` 後通知 `/discovery` 放行。
+
+> F7 僅在 `arguments.yml` 含 `tech_flavor: threejs` 時啟用。非 3D 專案跳過 F7 檢查。
+> 3D 互動的完整 Gherkin 詞彙見 `../aibdd-discovery/references/3d-interaction-patterns.md`。

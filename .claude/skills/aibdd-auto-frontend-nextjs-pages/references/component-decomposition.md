@@ -207,3 +207,35 @@ import styles from './LeadTable.module.css'
    - 圖示、圖片位置一致
    - 互動狀態（hover、focus、active）一致
 4. 不一致的地方立即修正，不留到後續 Phase
+
+---
+
+## 3D 場景拆解（tech_flavor: threejs）
+
+3D 場景不能從 HTML 結構拆解——R3F 元件樹是描述「場景圖（Scene Graph）」而非「DOM 樹」。
+
+### 3D 元件層級對照
+
+| HTML 等效 | R3F / drei 等效 | 位置 |
+|-----------|----------------|------|
+| `<div>` 容器 | `<Canvas3D>` | `src/components/3d/` |
+| 整個場景 | Scene 元件 | `src/scenes/` |
+| 3D 幾何體 | `<mesh>` + geometry + material | 場景元件內 |
+| 背景 / 環境光 | `<Environment>` (drei) | 場景元件內 |
+| 相機控制 | `<OrbitControls>` / `<CameraControls>` | 場景元件內 |
+| GLTF 模型 | `useGLTF` hook | 場景元件或 Model 子元件 |
+| HTML 標籤疊加在 3D 上 | `<Html>` (drei) | 場景元件內 |
+| 後處理效果 | `<EffectComposer>` (postprocessing) | 場景元件內 |
+
+### 拆解規則
+
+1. **一個場景 = 一個 Scene 元件**（`src/scenes/XxxScene.tsx`）
+2. **複雜模型 = 獨立 Model 元件**（`src/components/3d/PlanetMesh.tsx`）
+3. **2D UI overlay 不放進 Canvas**（除非需要跟隨 3D 物件，才用 `<Html>`）
+4. **場景狀態（相機角度、選中物件）用 Zustand 或 `useRef` 管理**，不用 `useState`（避免觸發 React re-render 影響 render loop）
+
+### 禁止項目
+
+- 不在場景元件內使用 `useEffect` + `setTimeout` 做動畫（用 `useFrame`）
+- 不對 THREE.js 物件直接設定 `.style`（three.js 物件無 style）
+- 不在 `<Canvas>` 內直接渲染 HTML 元素（需包裹 `<Html>` 才能用）

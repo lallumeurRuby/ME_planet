@@ -37,3 +37,11 @@
 - [ ] `cucumber.js` 的 paths、import 設定指向正確目錄
 - [ ] `support/world.ts` 能被 cucumber 載入
 - [ ] `npx cucumber-js --dry-run` 不報錯（允許 0 scenarios）
+
+## Gate G — Three.js 骨架（僅 tech_flavor: threejs）
+
+- [ ] `package.json` 含 `three`, `@react-three/fiber`, `@react-three/drei`, `@react-three/postprocessing`
+- [ ] `Canvas3D.tsx` 存在且 `tsc --noEmit` 無型別錯誤
+- [ ] `ExampleScene.tsx` 存在且包含 `useFrame` hook
+- [ ] `public/models/` 與 `public/textures/` 目錄已建立（含 `.gitkeep`）
+- [ ] `npm run dev` 後瀏覽器 console 無 WebGL context 錯誤

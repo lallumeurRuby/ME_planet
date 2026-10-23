@@ -41,8 +41,13 @@ Walking Skeleton 建構器。你從 templates/ 讀取樣板，替換 placeholder
 1. 讀取 `${PROJECT_ROOT}/specs/arguments.yml`（若不存在，讀取上層目錄的 `specs/arguments.yml`）
 2. 詢問使用者：PROJECT_NAME
 3. 推導：PROJECT_SLUG（kebab-case，預設 `walking-skeleton`）
+4. 偵測是否為 Three.js 變體：
+   - 若 `arguments.yml` 含 `tech_flavor: threejs` → 啟用 Three.js 擴展（Batch G）
+   - 若不含此欄位 → 標準 Walking Skeleton 流程
 
 ## Step 2：建立目錄結構
+
+**標準結構（所有變體共用）：**
 
 ```
 ${PROJECT_ROOT}/
@@ -65,6 +70,20 @@ ${PROJECT_ROOT}/
     ├── activities/
     ├── features/
     └── clarify/
+```
+
+**Three.js 額外目錄（tech_flavor: threejs 時追加）：**
+
+```
+${PROJECT_ROOT}/
+├── public/
+│   ├── models/                        # GLTF/GLB 3D 模型（靜態資源）
+│   └── textures/                      # 材質貼圖（靜態資源）
+├── ${SRC_DIR}/
+│   ├── scenes/                        # R3F 場景元件（對應 ${THREEJS_SCENES_DIR}）
+│   ├── shaders/                       # 自定義 GLSL shaders（對應 ${THREEJS_SHADERS_DIR}）
+│   └── components/
+│       └── 3d/                        # 3D 共用元件（對應 ${THREEJS_COMPONENTS_3D_DIR}）
 ```
 
 ## Step 3：初始化 MSW Service Worker
@@ -149,6 +168,21 @@ cd ${PROJECT_ROOT} && npx msw init public/ --save
 
 **Gate F**: `npx cucumber-js --dry-run` 不報錯
 
+### Batch G — Three.js 骨架（僅 tech_flavor: threejs）
+
+> 若 `arguments.yml` 未含 `tech_flavor: threejs`，跳過此 Batch。
+
+| Template 檔案 | 輸出路徑 |
+|---------------|----------|
+| [templates/src__components__3d__Canvas3D.tsx](templates/src__components__3d__Canvas3D.tsx) | `${SRC_DIR}/components/3d/Canvas3D.tsx` |
+| [templates/src__scenes__ExampleScene.tsx](templates/src__scenes__ExampleScene.tsx) | `${THREEJS_SCENES_DIR}/ExampleScene.tsx` |
+
+**Gate G**:
+- `package.json` 包含 `three`, `@react-three/fiber`, `@react-three/drei` 依賴
+- `Canvas3D.tsx` 可被其他元件 import（tsc --noEmit 無錯誤）
+- `ExampleScene.tsx` 包含至少一個 `<mesh>` 並使用 `useFrame`
+- `npm run dev` 瀏覽器 console 無 WebGL 錯誤
+
 ## Step 5：建立空 .gitkeep
 
 - `${SRC_DIR}/app/(public)/.gitkeep`
@@ -164,6 +198,8 @@ cd ${PROJECT_ROOT} && npx msw init public/ --save
 
 # 技術棧說明
 
+## 標準變體
+
 | 項目 | 技術 | 版本 |
 |------|------|------|
 | Framework | Next.js | 14.2.x |
@@ -174,6 +210,15 @@ cd ${PROJECT_ROOT} && npx msw init public/ --save
 | E2E Testing | Playwright | 1.x |
 | BDD Testing | Cucumber.js | 11.x |
 | Node.js | | 20+ |
+
+## Three.js 變體（額外套件）
+
+| 項目 | 技術 | 版本 |
+|------|------|------|
+| 3D Runtime | three | 0.167.x |
+| React Binding | @react-three/fiber | 8.x |
+| Helpers | @react-three/drei | 9.x |
+| Post-processing | @react-three/postprocessing | 2.x |
 
 ---
 

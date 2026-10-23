@@ -32,6 +32,7 @@ user-invocable: true
 | `references/flow-tree-format.md` | Step 2 Greenfield | Flow Tree 格式元素、單/多流程範例、迭代循環 |
 | `references/actor-legality.md` | Step 5 + Step 7a | Actor 合法性規則、判斷流程、內建系統轉化範例 |
 | `references/dependency-graph.mmd` | 初始化（optional） | 統一流程依賴關係圖 |
+| `references/3d-interaction-patterns.md` | Step 5（tech_flavor: threejs） | 3D 場景的 Gherkin 詞彙、互動模式、Feature 範例、測試策略 |
 
 ## 絕對不腦補（Non-Fabrication Principle）
 

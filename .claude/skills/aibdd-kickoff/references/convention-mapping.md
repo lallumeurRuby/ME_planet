@@ -84,6 +84,23 @@
 | PAGE_OBJECTS_DIR | page-objects |
 | STEPS_DIR | steps |
 
+## Frontend Only + Three.js
+
+包含所有 Frontend Only 的參數，額外新增：
+
+| 參數 | 預設值 |
+|------|--------|
+| tech_flavor | threejs |
+| THREEJS_SCENES_DIR | ${SRC_DIR}/scenes |
+| THREEJS_COMPONENTS_3D_DIR | ${SRC_DIR}/components/3d |
+| THREEJS_MODELS_DIR | public/models |
+| THREEJS_TEXTURES_DIR | public/textures |
+| THREEJS_SHADERS_DIR | ${SRC_DIR}/shaders |
+
+> `tech_flavor: threejs` 是 Walking Skeleton（`aibdd-auto-frontend-apifirst-msw-starter`）、
+> 頁面實作器（`aibdd-auto-frontend-nextjs-pages`）和 Feature Spec（F7 覆蓋率）
+> 的分支判斷開關。
+
 ## arguments.yml 範例（Python E2E）
 
 ```yaml
@@ -164,9 +181,11 @@ ALEMBIC_VERSIONS_DIR: alembic/versions
 
 ### 前端 Starter
 
-| Starter Skill |
-|---------------|
-| `/aibdd-auto-frontend-apifirst-msw-starter` |
+| 技術堆疊 | Starter Skill |
+|---------|---------------|
+| Frontend Only（D / Q1.5=A） | `/aibdd-auto-frontend-apifirst-msw-starter` |
+| Frontend Only + Three.js（E / Q1.5=B） | `/aibdd-auto-frontend-apifirst-msw-starter`（含 Three.js 擴展） |
 
-前端 starter 永遠顯示，不受 Q1 技術堆疊選擇影響。
+前端 starter 永遠顯示，不受後端技術堆疊選擇影響。
 specformula Phase 03（Frontend Engineering）需要前端骨架已就位。
+Three.js 變體在同一 starter 內處理，starter 會根據 `tech_flavor: threejs` 參數自動啟用 3D 相關 templates。
