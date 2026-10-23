@@ -1,0 +1,5 @@
+Feature: Placeholder # tests/features/placeholder.feature:1
+
+  Scenario: placeholder      # tests/features/placeholder.feature:2
+    Given a placeholder step # None
+
