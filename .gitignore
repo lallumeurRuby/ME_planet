@@ -1,1 +1,50 @@
-node_modules
+# ── 作業系統／編輯器 ──────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*.log
+
+# ── Node / Next.js（frontend/） ───────────────
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Playwright / Cucumber 測試產物
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+reports/
+
+# ── Python（backend/） ────────────────────────
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+
+# behave 測試輸出
+pretty.output
+
+# ── 環境變數 ──────────────────────────────────
+# .env.development / .env.example 不含機密，照常追蹤；
+# 本機覆寫與任何含機密的 .env 一律不進版本控制
+.env
+.env*.local
+backend/.env
+
+# ── Claude Code 個人設定（共用的 settings.json 與 skills 照常追蹤） ──
+.claude/settings.local.json
