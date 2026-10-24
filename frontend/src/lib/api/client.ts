@@ -1,14 +1,9 @@
 const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '/api'
 
+// api.yml：成功直接回傳資源／陣列（無 envelope）；錯誤統一為 { code, message }
 interface ApiError {
   code: string
   message: string
-}
-
-interface ApiResponse<T> {
-  success: boolean
-  data?: T
-  error?: ApiError
 }
 
 /**
@@ -42,14 +37,16 @@ export async function apiClient<T>(
     headers,
   })
 
-  const json: ApiResponse<T> = await res.json()
-
-  if (!res.ok || !json.success) {
-    const error = json.error ?? { code: 'UNKNOWN', message: res.statusText }
+  if (!res.ok) {
+    const error: ApiError = await res
+      .json()
+      .catch(() => ({ code: 'UNKNOWN', message: res.statusText }))
     throw new ApiClientError(error.code, error.message, res.status)
   }
 
-  return json.data as T
+  // 204 No Content（DELETE）沒有 body
+  if (res.status === 204) return undefined as T
+  return (await res.json()) as T
 }
 
 export class ApiClientError extends Error {

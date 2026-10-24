@@ -1,7 +1,5 @@
-import { redirect } from 'next/navigation'
+import { UniversePage } from '@/components/universe/UniversePage'
 
 export default function Home() {
-  // Redirect to the default authenticated page
-  // Worker should update this redirect target based on the flow-map
-  redirect('/products')
+  return <UniversePage />
 }
