@@ -1,0 +1,1088 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ME Planet — UI 原型</title>
+<!--
+  ME Planet 靜態原型（Phase 06 · nextjs-pages 的輸入）
+  設計方向：「深空知識星系」— 依使用者提供的參考圖。
+    · 深藍星空底（primary-950 → 更深的夜藍），星點
+    · 中央 ME Planet：藍色海洋 + 綠地小島（山、樹、小屋、雲），外圈發光的金色軌道
+    · 衛星 = 知識領域：有紋理的粉彩行星，各自帶小軌道，小衛星 = 子衛星
+    · 標籤：細引線 + 襯線衛星名稱（子衛星於飛入後顯示）
+    · 主色：--color-primary（primary-700）；深色底上的文字強調用 primary-200/300
+    · 字體：Cormorant Garamond（拉丁襯線）＋ Noto Serif TC（中文襯線標題）＋ Noto Sans TC（內文）
+  頁面：
+    #screen-universe   前台：3D 宇宙 → 飛入衛星 → 子衛星 → 段落 Modal
+    #screen-login      後台登入（401 / 429 鎖定）
+    #screen-admin      後台管理（衛星 → 子衛星 → 段落，三欄下鑽）
+  底部 .proto-bar 僅供原型切換頁面／狀態，正式頁面不需要。
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Noto+Serif+TC:wght@500;600&family=Noto+Sans+TC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --color-primary-50:  #EFF6FF;
+    --color-primary-100: #DBEAFE;
+    --color-primary-200: #BFDBFE;
+    --color-primary-300: #93C5FD;
+    --color-primary-400: #60A5FA;
+    --color-primary-500: #3B82F6;
+    --color-primary-600: #2563EB;
+    --color-primary-700: #1D4ED8;
+    --color-primary-800: #1E40AF;
+    --color-primary-900: #1E3A8A;
+    --color-primary-950: #0F1F4B;
+    --color-primary: var(--color-primary-700);
+
+    --space-deep: #060b20;
+    --space: var(--color-primary-950);
+    --surface: rgba(17, 29, 72, 0.62);
+    --surface-solid: #0e1940;
+    --line: rgba(147, 197, 253, 0.16);
+    --line-strong: rgba(147, 197, 253, 0.32);
+    --text: #e9efff;
+    --text-soft: #9eabd0;
+    --text-faint: #6e7ba3;
+    --accent-text: var(--color-primary-300);
+    --glow: rgba(96, 165, 250, 0.35);
+    --gold: #f2c58f;
+    --lavender: #c3b4ec;
+    --danger: #f39184;
+    --danger-bg: rgba(243, 145, 132, 0.12);
+    --warn-bg: rgba(242, 197, 143, 0.12);
+
+    --radius-lg: 22px;
+    --radius-md: 14px;
+    --radius-sm: 10px;
+    --shadow: 0 20px 50px -20px rgba(2, 6, 23, 0.85), 0 0 0 1px var(--line);
+    --font-display: "Cormorant Garamond", "Noto Serif TC", serif;
+    --font-title: "Noto Serif TC", "Cormorant Garamond", serif;
+    --font-body: "Noto Sans TC", system-ui, sans-serif;
+    --ease-out: cubic-bezier(.22, 1, .36, 1);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { font-family: var(--font-body); font-weight: 300; color: var(--text); background: var(--space-deep); -webkit-font-smoothing: antialiased; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  a { color: inherit; }
+  .screen { display: none; min-height: 100vh; }
+  .screen.is-active { display: block; }
+  .eyebrow { font-size: 12px; letter-spacing: .32em; text-transform: uppercase; color: var(--accent-text); font-weight: 400; }
+
+  /* ── 原型切換列（正式頁面不需要） ── */
+  .proto-bar {
+    position: fixed; z-index: 90; left: 50%; bottom: 18px; transform: translateX(-50%);
+    display: flex; gap: 4px; padding: 5px; border-radius: 999px;
+    background: rgba(6, 11, 32, .85); border: 1px solid var(--line); backdrop-filter: blur(10px);
+  }
+  .proto-bar button { border: 0; background: transparent; color: var(--text-soft); padding: 7px 14px; border-radius: 999px; font-size: 12.5px; }
+  .proto-bar button[aria-pressed="true"] { background: var(--color-primary); color: #fff; }
+  .proto-bar .sep { width: 1px; background: var(--line); margin: 6px 4px; }
+
+  /* ── 共用元件 ── */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    border: 1px solid var(--line-strong); background: rgba(15, 31, 75, .55); color: var(--text);
+    padding: 9px 16px; border-radius: 999px; font-size: 14px; font-weight: 400; text-decoration: none;
+    transition: transform .25s var(--ease-out), background .2s, border-color .2s, box-shadow .2s;
+  }
+  .btn:hover { transform: translateY(-1px); border-color: var(--color-primary-300); box-shadow: 0 0 24px -6px var(--glow); }
+  .btn:disabled { opacity: .4; pointer-events: none; }
+  .btn-primary { background: var(--color-primary); border-color: var(--color-primary-500); color: #fff; }
+  .btn-primary:hover { background: var(--color-primary-600); }
+  .btn-danger { background: #c4473a; border-color: #e0685b; color: #fff; }
+  .btn-ghost { border-color: transparent; background: transparent; }
+  .btn-icon { width: 34px; height: 34px; padding: 0; }
+  .btn-outline-lg { padding: 14px 30px; font-size: 15px; background: transparent; }
+
+  .field { display: grid; gap: 7px; }
+  .field label { font-size: 13px; color: var(--text-soft); display: flex; justify-content: space-between; }
+  .field input {
+    font: inherit; font-weight: 400; color: var(--text); background: rgba(6, 11, 32, .6); border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm); padding: 11px 13px; outline: none; transition: border-color .2s, box-shadow .2s;
+  }
+  .field input::placeholder { color: var(--text-faint); }
+  .field input:focus, .editor:focus-within { border-color: var(--color-primary-400); box-shadow: 0 0 0 3px rgba(59, 130, 246, .25); }
+  .field.is-error input { border-color: var(--danger); }
+  .field .error { font-size: 12.5px; color: var(--danger); }
+  .counter.is-over { color: var(--danger); font-weight: 500; }
+
+  .toast {
+    position: fixed; z-index: 95; top: 22px; left: 50%; transform: translate(-50%, -20px);
+    opacity: 0; pointer-events: none; transition: all .35s var(--ease-out);
+    background: var(--color-primary-100); color: var(--color-primary-950); padding: 11px 20px; border-radius: 999px;
+    font-size: 14px; font-weight: 400; box-shadow: 0 10px 40px -10px var(--glow);
+  }
+  .toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
+  .toast.is-error { background: #fbe2de; color: #7c2219; }
+
+  .dialog-backdrop { position: fixed; inset: 0; z-index: 80; display: none; place-items: center; background: rgba(3, 6, 20, .6); backdrop-filter: blur(4px); }
+  .dialog-backdrop.is-open { display: grid; animation: fade .25s var(--ease-out); }
+  .dialog { width: min(420px, calc(100vw - 32px)); background: var(--surface-solid); border-radius: var(--radius-lg); padding: 26px; box-shadow: var(--shadow); animation: rise .35s var(--ease-out); }
+  .dialog h3 { font-family: var(--font-title); font-weight: 600; font-size: 20px; margin: 0 0 8px; }
+  .dialog p { margin: 0 0 22px; color: var(--text-soft); line-height: 1.75; }
+  .dialog .actions { display: flex; justify-content: flex-end; gap: 8px; }
+  @keyframes fade { from { opacity: 0; } }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+
+  /* ═════════ 前台：3D 宇宙 ═════════ */
+  #screen-universe {
+    position: relative; height: 100vh; overflow: hidden;
+    background:
+      radial-gradient(60% 55% at 55% 48%, rgba(37, 99, 235, .22), transparent 70%),
+      radial-gradient(120% 100% at 50% 0%, var(--space) 0%, var(--space-deep) 70%);
+  }
+  #universe-canvas { position: absolute; inset: 0; }
+  #universe-canvas canvas { display: block; }
+  .leaders { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3; }
+  .leaders path { fill: none; stroke: rgba(201, 217, 255, .55); stroke-width: 1; }
+  .scene-labels { position: absolute; inset: 0; pointer-events: none; z-index: 4; }
+  .sat-label { position: absolute; pointer-events: auto; transition: opacity .45s var(--ease-out); }
+  .sat-label.is-left { text-align: right; }
+  .sat-label.is-dim { opacity: 0; pointer-events: none; }
+  .sat-label .sat-name {
+    border: 0; background: none; padding: 0; font-family: var(--font-title); font-weight: 500; font-size: 19px;
+    letter-spacing: .02em; color: #f3f6ff; text-shadow: 0 0 18px rgba(147, 197, 253, .35);
+  }
+  .sat-label .sat-name:hover { color: var(--color-primary-200); }
+  .moon-label {
+    position: absolute; transform: translate(-50%, -170%); pointer-events: auto; white-space: nowrap;
+    border: 1px solid var(--line-strong); background: rgba(6, 11, 32, .7); backdrop-filter: blur(6px);
+    padding: 4px 12px; border-radius: 999px; font-size: 13px; transition: transform .25s var(--ease-out), border-color .2s;
+  }
+  .moon-label:hover { border-color: var(--color-primary-300); transform: translate(-50%, -185%); }
+  .me-label { position: absolute; transform: translate(-50%, 0); text-align: center; pointer-events: none; transition: opacity .4s; }
+  .me-label strong { display: block; font-family: var(--font-display); font-weight: 600; font-size: 24px; letter-spacing: .08em; }
+  .me-label span { font-size: 12.5px; color: var(--text-soft); line-height: 1.7; }
+
+  .site-nav { position: absolute; z-index: 6; top: 0; left: 0; right: 0; display: flex; align-items: center; gap: 36px; padding: 26px 48px; }
+  .logo { display: flex; align-items: center; gap: 12px; font-size: 13px; letter-spacing: .3em; font-weight: 400; color: var(--text); text-decoration: none; }
+  .logo svg { width: 30px; height: 30px; }
+  .site-nav .spacer { flex: 1; }
+  .site-nav .nav-link { font-size: 14px; color: var(--text-soft); text-decoration: none; padding-bottom: 6px; border-bottom: 1px solid transparent; }
+  .site-nav .nav-link[aria-current="page"] { color: var(--text); border-color: var(--text); }
+  .pill-cta { padding: 10px 20px; }
+  .pill-cta .dot { width: 8px; height: 8px; border-radius: 50%; background: #fff; box-shadow: 0 0 10px #fff; }
+
+  .hero { position: absolute; z-index: 5; left: 48px; top: 18vh; width: min(440px, 36vw); transition: opacity .5s var(--ease-out), transform .5s var(--ease-out); }
+  .hero.is-hidden { opacity: 0; transform: translateX(-24px); pointer-events: none; }
+  .hero h1 { margin: 18px 0; font-family: var(--font-title); font-weight: 600; font-size: clamp(34px, 4.2vw, 58px); line-height: 1.18; letter-spacing: .01em; }
+  .hero h1 em { font-style: normal; background: linear-gradient(100deg, var(--color-primary-200), var(--lavender)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .hero p { margin: 0 0 30px; color: var(--text-soft); line-height: 1.9; font-size: 15px; }
+  .hero > * { animation: rise 1s var(--ease-out) both; }
+  .hero > :nth-child(2) { animation-delay: .1s; } .hero > :nth-child(3) { animation-delay: .2s; } .hero > :nth-child(4) { animation-delay: .3s; }
+
+  .breadcrumb {
+    position: absolute; z-index: 6; top: 96px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 10px; font-size: 14px;
+    background: rgba(6, 11, 32, .6); border: 1px solid var(--line); padding: 6px 8px 6px 16px; border-radius: 999px; backdrop-filter: blur(8px);
+  }
+  .breadcrumb[hidden] { display: none; }
+  .breadcrumb button.crumb-root { border: 0; background: none; color: var(--text-soft); padding: 0; }
+  .breadcrumb #crumb-current { font-family: var(--font-title); }
+  .scene-hint { position: absolute; z-index: 6; left: 48px; bottom: 36px; display: flex; align-items: center; gap: 14px; font-size: 13px; color: var(--text-soft); }
+  .scene-hint .mouse { width: 18px; height: 28px; border: 1.5px solid var(--text-soft); border-radius: 10px; position: relative; }
+  .scene-hint .mouse::after { content: ""; position: absolute; left: 50%; top: 6px; width: 2px; height: 6px; margin-left: -1px; background: var(--text-soft); border-radius: 2px; animation: wheel 1.8s infinite; }
+  @keyframes wheel { 50% { transform: translateY(5px); opacity: .3; } }
+
+  /* 所有衛星清單（不依賴 3D 也能瀏覽全部內容） */
+  #satellite-nav {
+    position: absolute; z-index: 7; top: 0; bottom: 0; left: 0; width: min(360px, 90vw); padding: 100px 32px 32px;
+    background: rgba(6, 11, 32, .9); border-right: 1px solid var(--line); backdrop-filter: blur(14px);
+    transform: translateX(-100%); transition: transform .5s var(--ease-out); overflow: auto;
+  }
+  #satellite-nav.is-open { transform: none; }
+  #satellite-nav h2 { margin: 10px 0 18px; font-family: var(--font-title); font-weight: 600; font-size: 22px; }
+  #satellite-nav ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+  #satellite-nav .sat-btn { border: 0; background: none; padding: 0; display: flex; align-items: center; gap: 12px; font-family: var(--font-title); font-size: 17px; }
+  #satellite-nav .sat-btn:hover { color: var(--color-primary-200); }
+  #satellite-nav .subs { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0 26px; }
+  #satellite-nav .subs button { border: 1px solid var(--line); background: none; border-radius: 999px; padding: 3px 11px; font-size: 12.5px; color: var(--text-soft); }
+  #satellite-nav .subs button:hover { border-color: var(--color-primary-300); color: var(--text); }
+  #satellite-nav-close { position: absolute; top: 28px; right: 24px; }
+
+  /* 段落 Modal */
+  #paragraph-modal .dialog { width: min(660px, calc(100vw - 32px)); max-height: min(80vh, 780px); display: flex; flex-direction: column; padding: 0; background: rgba(12, 21, 56, .96); }
+  .modal-head { padding: 24px 26px 16px; display: flex; align-items: flex-start; gap: 14px; border-bottom: 1px solid var(--line); }
+  .modal-head h3 { margin: 6px 0 0; font-size: 26px; }
+  .modal-head .btn-icon { margin-left: auto; }
+  .modal-planet { width: 38px; height: 38px; border-radius: 50%; flex: none; box-shadow: 0 0 22px -4px var(--glow), inset -6px -6px 12px rgba(0, 0, 0, .35); }
+  .modal-body { overflow: auto; padding: 6px 26px 26px; }
+  .paragraph-item { padding: 20px 0; border-bottom: 1px solid var(--line); animation: rise .5s var(--ease-out) both; }
+  .paragraph-item:last-child { border-bottom: 0; }
+  .paragraph-item header { display: flex; align-items: baseline; gap: 12px; }
+  .paragraph-item h4 { margin: 0; font-family: var(--font-title); font-weight: 600; font-size: 19px; }
+  .paragraph-item time { margin-left: auto; font-size: 12.5px; color: var(--text-faint); flex: none; letter-spacing: .05em; }
+  .paragraph-item .summary { margin: 6px 0 10px; color: var(--accent-text); font-size: 14px; }
+  .paragraph-item .content { line-height: 1.9; font-size: 15px; color: #d3dbf3; }
+  .paragraph-item .content p { margin: 0 0 .6em; }
+  .empty-state { text-align: center; padding: 50px 12px 40px; color: var(--text-soft); }
+  .empty-state .moon { width: 64px; height: 64px; margin: 0 auto 16px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #c9d4f2, #4a5a8f 70%); box-shadow: 0 0 30px -6px var(--glow); }
+  .empty-state strong { display: block; font-family: var(--font-title); font-weight: 500; color: var(--text); font-size: 18px; margin-bottom: 4px; }
+
+  /* WebGL fallback：CSS 星系圖 */
+  #webgl-fallback { position: absolute; inset: 0; display: none; z-index: 3; }
+  #webgl-fallback.is-visible { display: block; }
+  .fallback-planet {
+    position: absolute; left: 58%; top: 52%; width: 22vmin; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%;
+    background: radial-gradient(circle at 38% 30%, #9fd0ff, var(--color-primary-500) 40%, var(--color-primary-800) 75%);
+    box-shadow: 0 0 80px 10px rgba(59, 130, 246, .35);
+  }
+  .fallback-orbit { position: absolute; left: 58%; top: 52%; width: 74vmin; height: 34vmin; transform: translate(-50%, -50%); border: 1px solid var(--line-strong); border-radius: 50%; }
+  .fallback-sat { transform: translate(-50%, -50%); text-align: center; }
+  .fallback-sat .ball { width: 46px; height: 46px; margin: 0 auto 8px; border-radius: 50%; box-shadow: inset -8px -8px 14px rgba(0, 0, 0, .35); }
+  .fallback-note { position: absolute; top: 96px; left: 50%; transform: translateX(-50%); font-size: 13px; color: var(--text-soft); background: rgba(6, 11, 32, .7); padding: 7px 16px; border-radius: 999px; border: 1px solid var(--line); z-index: 6; }
+
+  /* ═════════ 後台：登入 ═════════ */
+  #screen-login { display: none; place-items: center; padding: 24px; position: relative; overflow: hidden;
+    background: radial-gradient(70% 60% at 50% 30%, rgba(37, 99, 235, .25), transparent 70%), radial-gradient(120% 100% at 50% 0%, var(--space), var(--space-deep) 70%); }
+  #screen-login.is-active { display: grid; }
+  .starfield { position: absolute; inset: 0; pointer-events: none; opacity: .8;
+    background-image: radial-gradient(1px 1px at 20% 30%, #fff, transparent), radial-gradient(1px 1px at 70% 20%, #cfe0ff, transparent),
+      radial-gradient(1.5px 1.5px at 85% 70%, #fff, transparent), radial-gradient(1px 1px at 35% 80%, #dbe6ff, transparent),
+      radial-gradient(1px 1px at 55% 55%, #fff, transparent), radial-gradient(1.5px 1.5px at 10% 65%, #cfe0ff, transparent);
+    background-size: 380px 380px; }
+  .login-card { width: min(410px, 100%); background: var(--surface); border: 1px solid var(--line); border-radius: 28px; backdrop-filter: blur(16px); padding: 40px 34px 32px; box-shadow: var(--shadow); position: relative; animation: rise .6s var(--ease-out); }
+  .login-card .mini-planet {
+    position: absolute; top: -34px; left: 50%; margin-left: -34px; width: 68px; height: 68px; border-radius: 50%;
+    background: radial-gradient(circle at 38% 30%, #9fd0ff, var(--color-primary-500) 45%, var(--color-primary-800) 80%);
+    box-shadow: 0 0 40px 2px rgba(59, 130, 246, .45);
+  }
+  .login-card .mini-planet::after { content: ""; position: absolute; inset: 26px -18px; border: 1.5px solid var(--gold); border-radius: 50%; transform: rotate(-16deg); opacity: .8; }
+  .login-card .eyebrow { text-align: center; display: block; margin-top: 18px; }
+  .login-card h2 { margin: 10px 0 26px; text-align: center; font-family: var(--font-title); font-weight: 600; font-size: 26px; }
+  #login-form { display: grid; gap: 16px; }
+  #login-form .btn-primary { padding: 12px; font-size: 15px; }
+  .alert { display: none; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: var(--radius-sm); font-size: 13.5px; line-height: 1.65; }
+  .alert.is-visible { display: flex; }
+  .alert-error { background: var(--danger-bg); color: #ffc3ba; border: 1px solid rgba(243, 145, 132, .3); }
+  .alert-locked { background: var(--warn-bg); color: #ffdcb2; border: 1px solid rgba(242, 197, 143, .3); }
+  .attempts { display: flex; gap: 5px; margin-top: 7px; }
+  .attempts i { width: 20px; height: 4px; border-radius: 3px; background: rgba(255, 255, 255, .15); }
+  .attempts i.used { background: var(--danger); }
+  .proto-hint { font-size: 12px; color: var(--text-faint); text-align: center; }
+  .back-link { margin-top: 20px; text-align: center; font-size: 13.5px; color: var(--text-soft); }
+
+  /* ═════════ 後台：管理 ═════════ */
+  #screen-admin { padding: 0 0 90px; background: radial-gradient(90% 60% at 50% 0%, var(--space), var(--space-deep) 70%); min-height: 100vh; }
+  .admin-top { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 16px; padding: 18px 36px; background: rgba(6, 11, 32, .8); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+  .admin-top .tag { font-size: 11px; letter-spacing: .24em; color: var(--accent-text); border: 1px solid var(--line-strong); padding: 3px 10px; border-radius: 999px; }
+  .admin-top .spacer { flex: 1; }
+  .session { font-size: 12.5px; color: var(--text-faint); }
+  .columns { display: grid; grid-template-columns: minmax(250px, 1fr) minmax(250px, 1fr) minmax(360px, 1.6fr); gap: 18px; padding: 26px 36px; }
+  @media (max-width: 980px) { .columns { grid-template-columns: 1fr; } }
+  .column { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); min-height: 64vh; display: flex; flex-direction: column; backdrop-filter: blur(12px); animation: rise .6s var(--ease-out) both; }
+  .column:nth-child(2) { animation-delay: .06s; } .column:nth-child(3) { animation-delay: .12s; }
+  .column-head { display: flex; align-items: center; gap: 10px; padding: 18px 18px 14px; border-bottom: 1px solid var(--line); }
+  .column-head h2 { margin: 0; font-family: var(--font-title); font-weight: 600; font-size: 18px; }
+  .column-head .count { font-size: 12px; color: var(--text-soft); background: rgba(147, 197, 253, .1); border-radius: 999px; padding: 2px 9px; }
+  .column-head .btn { margin-left: auto; padding: 7px 14px; font-size: 13px; }
+  .column-sub { padding: 10px 18px 0; font-size: 12.5px; color: var(--text-faint); }
+  .entity-list { list-style: none; margin: 0; padding: 8px; display: grid; gap: 2px; align-content: start; }
+  .entity-row { position: relative; display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 12px; cursor: pointer; transition: background .15s; }
+  .entity-row:hover { background: rgba(96, 165, 250, .07); }
+  .entity-row.is-selected { background: rgba(59, 130, 246, .16); }
+  .entity-row.is-selected::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; border-radius: 3px; background: var(--color-primary-400); box-shadow: 0 0 10px var(--color-primary-400); }
+  .entity-row .name { font-family: var(--font-title); font-weight: 500; font-size: 15.5px; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .entity-row .meta { font-size: 12px; color: var(--text-faint); }
+  .entity-row .row-actions { display: flex; gap: 2px; opacity: 0; transition: opacity .15s; }
+  .entity-row:hover .row-actions, .entity-row.is-selected .row-actions, .entity-row:focus-within .row-actions { opacity: 1; }
+  .row-actions .btn-icon { width: 28px; height: 28px; font-size: 13px; border-radius: 8px; }
+  .row-planet { width: 14px; height: 14px; border-radius: 50%; flex: none; box-shadow: inset -3px -3px 5px rgba(0, 0, 0, .35); }
+  .inline-form { display: grid; gap: 10px; padding: 12px; margin: 4px 0; border: 1px dashed var(--color-primary-400); border-radius: 12px; background: rgba(29, 78, 216, .1); }
+  .inline-form .row { display: flex; gap: 6px; justify-content: flex-end; }
+  .column-empty { padding: 30px 16px; text-align: center; color: var(--text-faint); font-size: 14px; line-height: 1.8; }
+  .paragraph-card { padding: 16px; border: 1px solid var(--line); border-radius: var(--radius-md); background: rgba(6, 11, 32, .35); display: grid; gap: 5px; }
+  .paragraph-card + .paragraph-card { margin-top: 10px; }
+  .paragraph-card .top { display: flex; align-items: center; gap: 6px; }
+  .paragraph-card h3 { margin: 0; font-family: var(--font-title); font-weight: 600; font-size: 16.5px; flex: 1; }
+  .paragraph-card p { margin: 0; font-size: 13.5px; color: var(--text-soft); }
+  .paragraph-card .dates { font-size: 12px; color: var(--text-faint); }
+
+  .drawer-backdrop { position: fixed; inset: 0; z-index: 70; background: rgba(3, 6, 20, .5); display: none; }
+  .drawer-backdrop.is-open { display: block; animation: fade .25s; }
+  #paragraph-form {
+    position: fixed; z-index: 71; top: 0; right: 0; bottom: 0; width: min(580px, 100vw);
+    background: var(--surface-solid); border-left: 1px solid var(--line); box-shadow: -30px 0 60px -30px rgba(2, 6, 23, .9);
+    transform: translateX(100%); transition: transform .45s var(--ease-out); display: flex; flex-direction: column;
+  }
+  #paragraph-form.is-open { transform: none; }
+  .drawer-head { padding: 22px 26px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 10px; }
+  .drawer-head h2 { margin: 0; font-family: var(--font-title); font-weight: 600; font-size: 21px; }
+  .drawer-head .btn-icon { margin-left: auto; }
+  .drawer-body { padding: 22px 26px; display: grid; gap: 20px; overflow: auto; flex: 1; align-content: start; }
+  .drawer-foot { padding: 16px 26px; border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: 8px; }
+  .editor { border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: rgba(6, 11, 32, .6); transition: border-color .2s, box-shadow .2s; }
+  .editor-toolbar { display: flex; gap: 2px; padding: 6px; border-bottom: 1px solid var(--line); }
+  .editor-toolbar button { border: 0; background: transparent; width: 32px; height: 30px; border-radius: 7px; font-size: 14px; color: var(--text-soft); }
+  .editor-toolbar button:hover { background: rgba(147, 197, 253, .1); color: var(--text); }
+  .editor-area { min-height: 230px; padding: 12px 14px; outline: none; line-height: 1.9; font-size: 15px; font-weight: 400; }
+  .editor-area:empty::before { content: attr(data-placeholder); color: var(--text-faint); }
+
+  @media (max-width: 860px) {
+    .hero { width: auto; right: 24px; left: 24px; top: auto; bottom: 90px; }
+    .site-nav { padding: 20px 24px; gap: 18px; }
+    .scene-hint { display: none; }
+  }
+</style>
+<script type="importmap">
+  { "imports": { "three": "https://unpkg.com/three@0.167.1/build/three.module.js" } }
+</script>
+</head>
+<body>
+
+<nav class="proto-bar" aria-label="原型頁面切換">
+  <button data-screen="universe" aria-pressed="true">前台宇宙</button>
+  <button data-screen="login" aria-pressed="false">後台登入</button>
+  <button data-screen="admin" aria-pressed="false">後台管理</button>
+  <span class="sep"></span>
+  <button id="proto-fallback" aria-pressed="false">WebGL fallback</button>
+</nav>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<!-- ═════════ 前台：3D 宇宙（/） ═════════ -->
+<section id="screen-universe" class="screen is-active" aria-label="ME Planet 知識宇宙">
+  <div id="universe-canvas" aria-hidden="true"></div>
+  <svg class="leaders" id="leaders" aria-hidden="true"></svg>
+  <div class="scene-labels" id="scene-labels"></div>
+  <div id="webgl-fallback">
+    <div class="fallback-note">你的瀏覽器不支援 3D 顯示，已改用靜態星系圖</div>
+    <div class="fallback-orbit"></div>
+    <div class="fallback-planet" role="img" aria-label="ME Planet"></div>
+    <div id="fallback-sats"></div>
+  </div>
+
+  <header class="site-nav">
+    <a class="logo" href="#" aria-label="ME Planet 首頁">
+      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><circle cx="16" cy="16" r="7" fill="#dbe6ff"/><ellipse cx="16" cy="16" rx="14" ry="4.5" transform="rotate(-24 16 16)" stroke="#dbe6ff" stroke-width="1.6"/></svg>
+      ME PLANET
+    </a>
+    <span class="spacer"></span>
+    <a class="nav-link" href="#" aria-current="page">宇宙</a>
+    <button class="btn pill-cta" data-goto="login">後台 <span class="dot"></span></button>
+  </header>
+
+  <section class="hero" id="hero">
+    <div class="eyebrow">My Knowledge Universe</div>
+    <h1>好奇心，<br><em>持續</em>公轉中。</h1>
+    <p>在不同的知識領域中持續探索、連結與累積，<br>讓學習成為推動我前進的引力。</p>
+    <button class="btn btn-outline-lg" id="explore-btn">探索我的宇宙 <span aria-hidden="true">→</span></button>
+  </section>
+
+  <nav class="breadcrumb" id="breadcrumb" hidden aria-label="目前位置">
+    <button class="crumb-root" id="crumb-root">ME Planet</button>
+    <span aria-hidden="true">›</span>
+    <span id="crumb-current"></span>
+    <button class="btn btn-ghost btn-icon" id="crumb-back" aria-label="返回整個宇宙">✕</button>
+  </nav>
+
+  <nav id="satellite-nav" aria-label="所有知識衛星">
+    <button class="btn btn-ghost btn-icon" id="satellite-nav-close" aria-label="關閉">✕</button>
+    <div class="eyebrow">All Satellites</div>
+    <h2>所有知識衛星</h2>
+    <ol id="satellite-nav-list"></ol>
+  </nav>
+
+  <div class="scene-hint"><span class="mouse" aria-hidden="true"></span>點擊衛星，飛近看看</div>
+</section>
+
+<!-- 段落 Modal -->
+<div class="dialog-backdrop" id="paragraph-modal" role="dialog" aria-modal="true" aria-labelledby="paragraph-modal-title">
+  <div class="dialog">
+    <div class="modal-head">
+      <span class="modal-planet" id="paragraph-modal-planet"></span>
+      <div>
+        <div class="eyebrow" id="paragraph-modal-eyebrow"></div>
+        <h3 id="paragraph-modal-title"></h3>
+      </div>
+      <button class="btn btn-icon" data-close="paragraph-modal" aria-label="關閉">✕</button>
+    </div>
+    <div class="modal-body" id="paragraph-modal-body"></div>
+  </div>
+</div>
+
+<!-- ═════════ 後台：登入（/admin/login） ═════════ -->
+<section id="screen-login" class="screen" aria-label="後台登入">
+  <div class="starfield" aria-hidden="true"></div>
+  <div class="login-card">
+    <span class="mini-planet" aria-hidden="true"></span>
+    <span class="eyebrow">Mission Control</span>
+    <h2>擁有者登入</h2>
+    <form id="login-form" novalidate>
+      <div class="field" id="password-field">
+        <label for="password">密碼</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" placeholder="輸入密碼">
+        <span class="error" id="password-error" hidden>請輸入密碼</span>
+      </div>
+      <div class="alert alert-error" id="login-error" role="alert">
+        <span>✕</span>
+        <div>密碼錯誤。連續錯誤 5 次會鎖定 15 分鐘。<div class="attempts" id="login-attempts" aria-label="已錯誤次數"></div></div>
+      </div>
+      <div class="alert alert-locked" id="login-locked" role="alert">
+        <span>⏳</span>
+        <div>登入已鎖定，請於 <strong id="locked-until">14:32</strong> 後再試。</div>
+      </div>
+      <button class="btn btn-primary" type="submit">登入</button>
+      <div class="proto-hint">原型：<code>Orbit#2026</code> 可登入；其他密碼示範錯誤，連錯 5 次示範鎖定</div>
+    </form>
+    <div class="back-link"><a href="#" data-goto="universe">← 回到宇宙</a></div>
+  </div>
+</section>
+
+<!-- ═════════ 後台：管理（/admin） ═════════ -->
+<section id="screen-admin" class="screen" aria-label="後台管理">
+  <header class="admin-top">
+    <a class="logo" href="#" data-goto="universe">
+      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><circle cx="16" cy="16" r="7" fill="#dbe6ff"/><ellipse cx="16" cy="16" rx="14" ry="4.5" transform="rotate(-24 16 16)" stroke="#dbe6ff" stroke-width="1.6"/></svg>
+      ME PLANET
+    </a>
+    <span class="tag">ADMIN</span>
+    <span class="spacer"></span>
+    <span class="session">登入有效至 明天 11:49</span>
+    <a class="btn" href="#" data-goto="universe">檢視前台</a>
+    <button class="btn" data-goto="login">登出</button>
+  </header>
+
+  <div class="columns">
+    <section class="column" aria-labelledby="col-sat">
+      <div class="column-head"><h2 id="col-sat">衛星</h2><span class="count" id="satellite-count"></span>
+        <button class="btn btn-primary" id="add-satellite">＋ 新增</button></div>
+      <div class="column-sub">依建立時間 舊 → 新</div>
+      <ul class="entity-list" id="satellite-list"></ul>
+    </section>
+    <section class="column" aria-labelledby="col-sub">
+      <div class="column-head"><h2 id="col-sub">子衛星</h2><span class="count" id="sub-satellite-count"></span>
+        <button class="btn btn-primary" id="add-sub-satellite">＋ 新增</button></div>
+      <div class="column-sub" id="sub-satellite-context"></div>
+      <ul class="entity-list" id="sub-satellite-list"></ul>
+    </section>
+    <section class="column" aria-labelledby="col-para">
+      <div class="column-head"><h2 id="col-para">段落</h2><span class="count" id="paragraph-count"></span>
+        <button class="btn btn-primary" id="add-paragraph">＋ 新增段落</button></div>
+      <div class="column-sub" id="paragraph-context"></div>
+      <div id="paragraph-list" style="padding:12px"></div>
+    </section>
+  </div>
+</section>
+
+<!-- 段落新增／編輯抽屜 -->
+<div class="drawer-backdrop" id="paragraph-form-backdrop"></div>
+<form id="paragraph-form" aria-labelledby="paragraph-form-title" novalidate>
+  <div class="drawer-head">
+    <h2 id="paragraph-form-title">新增段落</h2>
+    <button type="button" class="btn btn-icon" id="paragraph-form-close" aria-label="關閉">✕</button>
+  </div>
+  <div class="drawer-body">
+    <div class="field" id="title-field">
+      <label for="paragraph-title">標題 <span class="counter" id="title-counter">0 / 100</span></label>
+      <input id="paragraph-title" name="title" maxlength="120" placeholder="例如：銀河系簡介">
+      <span class="error" id="title-error" hidden></span>
+    </div>
+    <div class="field">
+      <label for="paragraph-summary">摘要 <span>選填</span></label>
+      <input id="paragraph-summary" name="summary" placeholder="一句話說明這段筆記">
+    </div>
+    <div class="field" id="content-field">
+      <label>內容</label>
+      <div class="editor">
+        <div class="editor-toolbar" role="toolbar" aria-label="格式">
+          <button type="button" data-cmd="bold" aria-label="粗體"><b>B</b></button>
+          <button type="button" data-cmd="italic" aria-label="斜體"><i>I</i></button>
+          <button type="button" data-cmd="insertUnorderedList" aria-label="項目清單">•</button>
+          <button type="button" data-cmd="formatBlock" data-arg="h3" aria-label="小標題">H</button>
+        </div>
+        <div class="editor-area" id="paragraph-content" contenteditable="true" data-placeholder="寫下你的筆記…"></div>
+      </div>
+      <span class="error" id="content-error" hidden>內容為必填</span>
+    </div>
+  </div>
+  <div class="drawer-foot">
+    <button type="button" class="btn" id="paragraph-form-cancel">取消</button>
+    <button type="submit" class="btn btn-primary">儲存</button>
+  </div>
+</form>
+
+<!-- 刪除確認對話框 -->
+<div class="dialog-backdrop" id="confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title">
+  <div class="dialog">
+    <h3 id="confirm-title">刪除</h3>
+    <p id="confirm-message"></p>
+    <div class="actions">
+      <button class="btn" data-close="confirm-dialog">取消</button>
+      <button class="btn btn-danger" id="confirm-ok">刪除</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  /* ───────────── 範例資料 ───────────── */
+  // 衛星配色：依建立順序循環（參考圖的霧面粉彩行星）
+  const PALETTE = [
+    { hex: '#7f95dd', css: 'radial-gradient(circle at 35% 30%, #c7d3fb, #7f95dd 55%, #3f4f8f)' },
+    { hex: '#b9a8e0', css: 'radial-gradient(circle at 35% 30%, #ece5ff, #b9a8e0 55%, #62558f)' },
+    { hex: '#e3a679', css: 'radial-gradient(circle at 35% 30%, #ffe0c4, #e3a679 55%, #8f5733)' },
+    { hex: '#c8c88f', css: 'radial-gradient(circle at 35% 30%, #f3f3cf, #c8c88f 55%, #6d6d3f)' },
+    { hex: '#dca1a6', css: 'radial-gradient(circle at 35% 30%, #ffe1e3, #dca1a6 55%, #8a4d53)' },
+    { hex: '#8fb2d9', css: 'radial-gradient(circle at 35% 30%, #d9ecff, #8fb2d9 55%, #3f6189)' },
+  ];
+  let nextId = 1000;
+  const db = {
+    satellites: [
+      { id: 1, name: '天文', created_at: '2026-01-01T00:00' },
+      { id: 2, name: '程式設計', created_at: '2026-01-02T00:00' },
+      { id: 3, name: '音樂', created_at: '2026-01-03T00:00' },
+      { id: 4, name: '烹飪', created_at: '2026-01-04T00:00' },
+      { id: 5, name: '閱讀', created_at: '2026-01-05T00:00' },
+      { id: 6, name: '旅行', created_at: '2026-01-06T00:00' },
+    ],
+    subs: [
+      { id: 11, satellite_id: 1, name: '星系', created_at: '2026-02-01T00:00' },
+      { id: 12, satellite_id: 1, name: '行星', created_at: '2026-02-02T00:00' },
+      { id: 13, satellite_id: 1, name: '彗星', created_at: '2026-02-03T00:00' },
+      { id: 21, satellite_id: 2, name: '演算法', created_at: '2026-02-01T00:00' },
+      { id: 22, satellite_id: 2, name: 'TypeScript', created_at: '2026-02-05T00:00' },
+      { id: 23, satellite_id: 2, name: '前端開發', created_at: '2026-02-06T00:00' },
+      { id: 24, satellite_id: 2, name: 'AI 工具', created_at: '2026-02-07T00:00' },
+      { id: 31, satellite_id: 3, name: '和聲學', created_at: '2026-02-06T00:00' },
+      { id: 41, satellite_id: 4, name: '烘焙', created_at: '2026-02-08T00:00' },
+      { id: 42, satellite_id: 4, name: '發酵', created_at: '2026-02-09T00:00' },
+      { id: 51, satellite_id: 5, name: '科普', created_at: '2026-02-10T00:00' },
+      { id: 52, satellite_id: 5, name: '小說', created_at: '2026-02-11T00:00' },
+      { id: 53, satellite_id: 5, name: '設計', created_at: '2026-02-12T00:00' },
+    ],
+    paragraphs: [
+      { id: 101, sub_satellite_id: 11, title: '銀河系簡介', summary: '我們所在的星系', content: '<p>銀河系是一個棒旋星系，直徑約十萬光年。</p>', created_at: '2026-03-01T00:00', updated_at: '2026-03-01T00:00' },
+      { id: 102, sub_satellite_id: 11, title: '仙女座星系', summary: '距離最近的大星系', content: '<p>仙女座星系是螺旋星系，約 40 億年後會與銀河系碰撞。</p>', created_at: '2026-03-03T00:00', updated_at: '2026-03-05T00:00' },
+      { id: 103, sub_satellite_id: 11, title: '麥哲倫雲', summary: null, content: '<p>麥哲倫雲是矮星系，在南半球肉眼可見。</p>', created_at: '2026-03-02T00:00', updated_at: '2026-03-02T00:00' },
+      { id: 104, sub_satellite_id: 12, title: '火星筆記', summary: '紅色星球', content: '<p>火星有兩顆衛星：<b>火衛一</b>與<b>火衛二</b>。</p>', created_at: '2026-03-04T00:00', updated_at: '2026-03-04T00:00' },
+    ],
+  };
+  const byOld = (a, b) => a.created_at.localeCompare(b.created_at) || a.id - b.id;
+  const byNew = (a, b) => -byOld(a, b);
+  const satellites = () => [...db.satellites].sort(byOld);
+  const subsOf = (sid) => db.subs.filter((s) => s.satellite_id === sid).sort(byOld);
+  const parasOf = (sid) => db.paragraphs.filter((p) => p.sub_satellite_id === sid).sort(byNew);
+  const paletteOf = (sat) => PALETTE[satellites().findIndex((s) => s.id === sat.id) % PALETTE.length];
+  const fmtDate = (iso) => { const d = new Date(iso); return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`; };
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+  /* ───────────── 共用：toast / dialog / 頁面切換 ───────────── */
+  const toastEl = document.getElementById('toast');
+  let toastTimer;
+  function toast(msg, isError = false) {
+    toastEl.textContent = msg; toastEl.classList.toggle('is-error', isError); toastEl.classList.add('is-visible');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => toastEl.classList.remove('is-visible'), 2800);
+  }
+  const openDialog = (id) => document.getElementById(id).classList.add('is-open');
+  const closeDialog = (id) => document.getElementById(id).classList.remove('is-open');
+  document.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', () => closeDialog(b.dataset.close)));
+  document.querySelectorAll('.dialog-backdrop').forEach((d) => d.addEventListener('click', (e) => { if (e.target === d) closeDialog(d.id); }));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') document.querySelectorAll('.dialog-backdrop.is-open').forEach((d) => closeDialog(d.id)); });
+  function confirmDelete(title, message, onOk) {
+    document.getElementById('confirm-title').textContent = title;
+    document.getElementById('confirm-message').innerHTML = message;
+    document.getElementById('confirm-ok').onclick = () => { closeDialog('confirm-dialog'); onOk(); };
+    openDialog('confirm-dialog');
+  }
+  function showScreen(name) {
+    document.querySelectorAll('.screen').forEach((s) => s.classList.toggle('is-active', s.id === `screen-${name}`));
+    document.querySelectorAll('.proto-bar [data-screen]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.screen === name)));
+    if (name === 'admin') renderAdmin();
+    if (name === 'universe') rebuildUniverse();
+  }
+  document.querySelectorAll('[data-screen]').forEach((b) => b.addEventListener('click', () => showScreen(b.dataset.screen)));
+  document.querySelectorAll('[data-goto]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); showScreen(a.dataset.goto); }));
+
+  /* ───────────── 前台：段落 Modal ───────────── */
+  function openParagraphModal(sub) {
+    const sat = db.satellites.find((s) => s.id === sub.satellite_id);
+    document.getElementById('paragraph-modal-eyebrow').textContent = sat.name;
+    document.getElementById('paragraph-modal-title').textContent = sub.name;
+    document.getElementById('paragraph-modal-planet').style.background = paletteOf(sat).css;
+    const items = parasOf(sub.id);
+    document.getElementById('paragraph-modal-body').innerHTML = items.length
+      ? items.map((p, i) => `
+        <article class="paragraph-item" style="animation-delay:${i * 70}ms">
+          <header><h4>${esc(p.title)}</h4><time datetime="${p.created_at}">${fmtDate(p.created_at)}</time></header>
+          ${p.summary ? `<p class="summary">${esc(p.summary)}</p>` : ''}
+          <div class="content">${p.content}</div>
+        </article>`).join('')
+      : `<div class="empty-state"><div class="moon"></div><strong>這顆子衛星還沒有筆記</strong>之後寫下的學習筆記會出現在這裡</div>`;
+    openDialog('paragraph-modal');
+  }
+
+  /* ───────────── 前台：衛星標籤（引線 + 名稱） ───────────── */
+  // 標籤只顯示衛星名稱；子衛星在飛入後以小衛星名稱、或「探索我的宇宙」清單中呈現
+  const labelInner = (sat) => `<button class="sat-name" data-sat="${sat.id}">${esc(sat.name)}</button>`;
+  function bindLabelEvents(root) {
+    root.querySelectorAll('[data-sat]').forEach((b) => b.addEventListener('click', () => focusSatellite(+b.dataset.sat)));
+    root.querySelectorAll('[data-sub]').forEach((b) => b.addEventListener('click', () => openParagraphModal(db.subs.find((u) => u.id === +b.dataset.sub))));
+  }
+
+  /* 所有衛星清單（抽屜） */
+  const navEl = document.getElementById('satellite-nav');
+  function renderNav() {
+    document.getElementById('satellite-nav-list').innerHTML = satellites().map((s) => `
+      <li><button class="sat-btn" data-sat="${s.id}"><span class="row-planet" style="background:${paletteOf(s).css}"></span>${esc(s.name)}</button>
+        <div class="subs">${subsOf(s.id).map((u) => `<button data-sub="${u.id}">${esc(u.name)}</button>`).join('')}</div></li>`).join('');
+    bindLabelEvents(navEl);
+    navEl.querySelectorAll('[data-sat]').forEach((b) => b.addEventListener('click', () => navEl.classList.remove('is-open')));
+  }
+  document.getElementById('explore-btn').onclick = () => navEl.classList.add('is-open');
+  document.getElementById('satellite-nav-close').onclick = () => navEl.classList.remove('is-open');
+
+  let focusedSatId = null;
+  const crumb = document.getElementById('breadcrumb');
+  document.getElementById('crumb-root').onclick = () => focusSatellite(null);
+  document.getElementById('crumb-back').onclick = () => focusSatellite(null);
+
+  /* ───────────── WebGL fallback ───────────── */
+  const fallbackEl = document.getElementById('webgl-fallback');
+  function renderFallback() {
+    const sats = satellites();
+    const host = document.getElementById('fallback-sats');
+    host.innerHTML = sats.map((s, i) => {
+      const a = (i / sats.length) * Math.PI * 2 - Math.PI / 2;
+      return `<div class="fallback-sat sat-label" style="left:calc(58% + ${Math.cos(a) * 40}vmin);top:calc(52% + ${Math.sin(a) * 19}vmin)">
+        <div class="ball" style="background:${paletteOf(s).css}"></div>${labelInner(s)}</div>`;
+    }).join('');
+    bindLabelEvents(host);
+  }
+  function setFallback(on) {
+    fallbackEl.classList.toggle('is-visible', on);
+    ['universe-canvas', 'scene-labels', 'leaders'].forEach((id) => document.getElementById(id).style.visibility = on ? 'hidden' : 'visible');
+    document.getElementById('proto-fallback').setAttribute('aria-pressed', String(on));
+    if (on) { focusSatellite(null); renderFallback(); }
+  }
+  document.getElementById('proto-fallback').addEventListener('click', (e) => {
+    const on = e.currentTarget.getAttribute('aria-pressed') !== 'true';
+    showScreen('universe'); setFallback(on);
+  });
+
+  /* ───────────── Three.js 場景 ───────────── */
+  const THREE = await import('three').catch(() => null);
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const hasWebGL = (() => { try { return !!document.createElement('canvas').getContext('webgl2'); } catch { return false; } })();
+  let scene3d = null;
+
+  function createScene() {
+    const host = document.getElementById('universe-canvas');
+    const labelsEl = document.getElementById('scene-labels');
+    const leadersEl = document.getElementById('leaders');
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.1;
+    host.appendChild(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(28, 1, 0.1, 600);
+    // 首頁視角：方向固定（俯角約 20°），距離依視窗大小自動計算，讓整個星系留在畫面內
+    const HOME_TARGET = new THREE.Vector3(0, 0, 0), HOME_DIR = new THREE.Vector3(0, 8.5, 23).normalize();
+    const HOME_OFFSET = HOME_DIR.clone().multiplyScalar(30);
+    const SYSTEM_RADIUS = 10.4 + 1.55 + 0.95;   // 外圈軌道 + 小衛星軌道 + 衛星半徑
+    const WIDE_BREAKPOINT = 860, SHIFT_RIGHT = 0.12;  // 寬螢幕時把星系中心移到畫面 62% 處，讓出左側 hero
+    let viewShift = 0;
+    const FOCUS_OFFSET = new THREE.Vector3(0, 2.6, 7.2);
+    const target = HOME_TARGET.clone(), camPos = HOME_TARGET.clone().add(HOME_OFFSET);
+    const targetGoal = target.clone(), camGoal = camPos.clone();
+    const parallax = new THREE.Vector2();
+
+    /* 光：冷色環境光 + 暖色主光（行星上的金色晨昏線） */
+    scene.add(new THREE.HemisphereLight(0x9db8ff, 0x0b1338, 0.9));
+    const sun = new THREE.DirectionalLight(0xffe2c0, 2.4); sun.position.set(10, 8, 6); scene.add(sun);
+    const rim = new THREE.DirectionalLight(0x6ea2ff, 1.2); rim.position.set(-10, 2, -8); scene.add(rim);
+
+    /* 小工具：canvas 貼圖、光暈 */
+    function canvasTexture(w, h, draw) {
+      const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h);
+      const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+    }
+    const glowTex = canvasTexture(128, 128, (g, w) => {
+      const r = g.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2);
+      r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(.25, 'rgba(255,255,255,.45)'); r.addColorStop(1, 'rgba(255,255,255,0)');
+      g.fillStyle = r; g.fillRect(0, 0, w, w);
+    });
+    const glow = (color, scale, opacity) => {
+      const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color, transparent: true, opacity, blending: THREE.AdditiveBlending, depthWrite: false }));
+      s.scale.setScalar(scale); return s;
+    };
+    function planetTexture(hex, seed) {
+      let r = seed; const rnd = () => (r = (r * 9301 + 49297) % 233280) / 233280;
+      return canvasTexture(512, 256, (g, w, h) => {
+        g.fillStyle = hex; g.fillRect(0, 0, w, h);
+        for (let i = 0; i < 14; i++) { g.fillStyle = `rgba(255,255,255,${0.03 + rnd() * .05})`; g.fillRect(0, rnd() * h, w, 4 + rnd() * 18); }
+        for (let i = 0; i < 90; i++) {
+          const x = rnd() * w, y = rnd() * h, rad = 3 + rnd() * 22, dark = rnd() > .5;
+          const gr = g.createRadialGradient(x, y, 0, x, y, rad);
+          gr.addColorStop(0, dark ? 'rgba(20,20,50,.22)' : 'rgba(255,255,255,.2)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+          g.fillStyle = gr; g.beginPath(); g.arc(x, y, rad, 0, Math.PI * 2); g.fill();
+        }
+      });
+    }
+    const matte = (opts) => new THREE.MeshStandardMaterial({ roughness: 0.9, metalness: 0, ...opts });
+
+    /* 星空 */
+    const starPos = [];
+    for (let i = 0; i < 1400; i++) { const v = new THREE.Vector3().randomDirection().multiplyScalar(90 + Math.random() * 90); starPos.push(v.x, v.y, v.z); }
+    const starGeo = new THREE.BufferGeometry(); starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPos, 3));
+    const stars = new THREE.Points(starGeo, new THREE.PointsMaterial({ color: 0xcfdcff, size: 0.55, transparent: true, opacity: .85, map: glowTex, depthWrite: false, blending: THREE.AdditiveBlending }));
+    scene.add(stars);
+
+    /* ME Planet：海洋 + 小島（山、樹、小屋、雲） */
+    const me = new THREE.Group(); scene.add(me);
+    me.add(new THREE.Mesh(new THREE.SphereGeometry(2.3, 64, 48), new THREE.MeshStandardMaterial({ color: 0x2f74e8, roughness: 0.45, metalness: 0.05, emissive: 0x0b2a7a, emissiveIntensity: 0.35 })));
+    const landGeo = new THREE.SphereGeometry(2.36, 64, 32, 0, Math.PI * 2, 0, Math.PI * 0.36);
+    const lp = landGeo.attributes.position, tmp = new THREE.Vector3();
+    for (let i = 0; i < lp.count; i++) {
+      tmp.fromBufferAttribute(lp, i);
+      const n = Math.sin(tmp.x * 3.1) * Math.cos(tmp.z * 2.7) * 0.06 + Math.sin(tmp.x * 7 + tmp.z * 5) * 0.025;
+      tmp.multiplyScalar(1 + n); lp.setXYZ(i, tmp.x, tmp.y, tmp.z);
+    }
+    landGeo.computeVertexNormals();
+    me.add(new THREE.Mesh(landGeo, matte({ color: 0x6fae5d })));
+    me.add(new THREE.Mesh(new THREE.SphereGeometry(2.33, 64, 8, 0, Math.PI * 2, Math.PI * 0.34, Math.PI * 0.06), matte({ color: 0xb59a7c })));
+    const onSurface = (lat, lon, r) => new THREE.Vector3().setFromSphericalCoords(r, lat, lon);
+    const placeOn = (obj, lat, lon, r) => { obj.position.copy(onSurface(lat, lon, r)); obj.lookAt(obj.position.clone().multiplyScalar(2)); obj.rotateX(Math.PI / 2); me.add(obj); };
+    [[0.12, 0.4, 1.1], [0.32, 2.2, 0.75], [0.28, 4.4, 0.6]].forEach(([lat, lon, h]) => {
+      placeOn(new THREE.Mesh(new THREE.ConeGeometry(0.55 * h, 1.3 * h, 7), matte({ color: 0x8d8178, flatShading: true })), lat, lon, 2.3 + 0.6 * h);
+      placeOn(new THREE.Mesh(new THREE.ConeGeometry(0.2 * h, 0.4 * h, 7), matte({ color: 0xf4f6ff, flatShading: true })), lat, lon, 2.3 + 1.05 * h);
+    });
+    for (let i = 0; i < 26; i++) {
+      const s = 0.6 + Math.random() * 0.5;
+      placeOn(new THREE.Mesh(new THREE.ConeGeometry(0.11 * s, 0.34 * s, 6), matte({ color: i % 3 ? 0x3e8a4a : 0x2f6e3e, flatShading: true })), 0.25 + Math.random() * 0.8, Math.random() * Math.PI * 2, 2.5 + 0.1 * s);
+    }
+    const house = new THREE.Group();
+    house.add(new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.26, 0.32), matte({ color: 0xf4efe6 })));
+    const roof = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.06, 0.4), matte({ color: 0xb3563f })); roof.position.y = 0.16; house.add(roof);
+    const win = new THREE.Mesh(new THREE.PlaneGeometry(0.12, 0.08), new THREE.MeshBasicMaterial({ color: 0xffd28a })); win.position.set(0.05, 0.02, 0.161); house.add(win);
+    placeOn(house, 0.52, 1.2, 2.47);
+    const cloudMat = matte({ color: 0xffffff, roughness: 1 });
+    const clouds = new THREE.Group(); me.add(clouds);
+    for (let i = 0; i < 9; i++) {
+      const c = new THREE.Group();
+      for (let j = 0; j < 4; j++) { const b = new THREE.Mesh(new THREE.SphereGeometry(0.16 + Math.random() * 0.12, 12, 10), cloudMat); b.position.set(j * 0.18 - 0.27, Math.random() * 0.08, Math.random() * 0.1); c.add(b); }
+      c.position.copy(onSurface(0.9 + Math.random() * 1.1, Math.random() * Math.PI * 2, 2.75)); c.lookAt(0, 0, 0); clouds.add(c);
+    }
+    me.add(glow(0x5b9bff, 9.5, 0.55));
+    me.rotation.x = 0.35;
+    // 金色內圈軌道 + 光點
+    const goldRing = new THREE.Mesh(new THREE.TorusGeometry(3.6, 0.012, 6, 220), new THREE.MeshBasicMaterial({ color: 0xffc98f, transparent: true, opacity: 0.75 }));
+    goldRing.rotation.x = Math.PI / 2 - 0.08; scene.add(goldRing);
+    const ringSparks = new THREE.Group(); scene.add(ringSparks);
+    for (let i = 0; i < 5; i++) { const s = glow(0xffd29a, 0.45, 0.9); s.userData.a = (i / 5) * Math.PI * 2; ringSparks.add(s); }
+
+    /* 衛星（知識領域）與其小衛星（子衛星） */
+    const orbitLayer = new THREE.Group(); scene.add(orbitLayer);
+    let sats = [], moonMeshes = [], moonLabels = [];
+    const satLabelEls = new Map();
+    const orbitLine = (radius, opacity) => {
+      const pts = Array.from({ length: 241 }, (_, i) => { const a = (i / 240) * Math.PI * 2; return new THREE.Vector3(Math.cos(a) * radius, 0, Math.sin(a) * radius); });
+      return new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0xbcd0ff, transparent: true, opacity }));
+    };
+
+    function build() {
+      orbitLayer.clear(); labelsEl.innerHTML = ''; satLabelEls.clear(); sats = [];
+      const list = satellites();
+      [7.6, 10.4].forEach((r, i) => orbitLayer.add(orbitLine(r, i ? 0.14 : 0.2)));
+      list.forEach((s, i) => {
+        const pal = paletteOf(s);
+        const group = new THREE.Group();
+        const body = new THREE.Mesh(new THREE.SphereGeometry(0.95, 48, 32), matte({ map: planetTexture(pal.hex, i * 97 + 13) }));
+        body.userData.satId = s.id; group.add(body);
+        group.add(glow(pal.hex, 3.4, 0.22));
+        const tilt = new THREE.Group(); tilt.rotation.set(0.35 + (i % 3) * 0.12, 0, (i % 2 ? -1 : 1) * 0.25); group.add(tilt);
+        tilt.add(orbitLine(1.55, 0.35));
+        const moonColor = new THREE.Color(pal.hex).lerp(new THREE.Color(0xffffff), 0.35);
+        const moons = subsOf(s.id).map((u, k, all) => {
+          const m = new THREE.Mesh(new THREE.SphereGeometry(0.13 + (k % 2) * 0.04, 20, 14), matte({ color: moonColor }));
+          m.userData = { sub: u, a: (k / all.length) * Math.PI * 2 }; tilt.add(m); return m;
+        });
+        group.userData = { sat: s, body, moons, radius: i % 2 ? 10.4 : 7.6, angle: (i / list.length) * Math.PI * 2 + 0.4, speed: 0.025 + (i % 3) * 0.006 };
+        orbitLayer.add(group); sats.push(group);
+
+        const el = document.createElement('div'); el.className = 'sat-label'; el.innerHTML = labelInner(s);
+        bindLabelEvents(el); labelsEl.appendChild(el); satLabelEls.set(s.id, el);
+      });
+      const meLabel = document.createElement('div'); meLabel.className = 'me-label'; meLabel.id = 'me-label';
+      meLabel.innerHTML = '<strong>ME</strong><span>一位終身學習者<br>每天長出一點新的知識</span>'; labelsEl.appendChild(meLabel);
+      buildMoonLabels();
+    }
+    function buildMoonLabels() {
+      moonLabels.forEach((l) => l.el.remove()); moonLabels = []; moonMeshes = [];
+      const g = sats.find((x) => x.userData.sat.id === focusedSatId);
+      if (!g) return;
+      g.userData.moons.forEach((m) => {
+        const el = document.createElement('button'); el.className = 'moon-label'; el.textContent = m.userData.sub.name;
+        el.onclick = () => openParagraphModal(m.userData.sub); labelsEl.appendChild(el);
+        moonLabels.push({ el, mesh: m }); moonMeshes.push(m);
+      });
+    }
+
+    /* 互動：點擊 / hover / 滑鼠視差 */
+    const raycaster = new THREE.Raycaster(), pointer = new THREE.Vector2();
+    const pick = (e) => {
+      const r = renderer.domElement.getBoundingClientRect();
+      pointer.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+      raycaster.setFromCamera(pointer, camera);
+      return raycaster.intersectObjects([...moonMeshes, ...sats.map((g) => g.userData.body)])[0];
+    };
+    renderer.domElement.addEventListener('click', (e) => {
+      const hit = pick(e); if (!hit) return;
+      if (hit.object.userData.sub) openParagraphModal(hit.object.userData.sub); else focusSatellite(hit.object.userData.satId);
+    });
+    addEventListener('pointermove', (e) => {
+      parallax.set(e.clientX / innerWidth - 0.5, e.clientY / innerHeight - 0.5);
+      renderer.domElement.style.cursor = pick(e) ? 'pointer' : 'default';
+    });
+
+    function resize() {
+      const w = host.clientWidth, h = host.clientHeight, wide = w > WIDE_BREAKPOINT;
+      renderer.setSize(w, h); camera.aspect = w / h;
+      // 水平：星系半徑要落在可用半寬內（寬螢幕右側剩 38% 畫面，並預留標籤空間）
+      const tanV = Math.tan((camera.fov * Math.PI) / 360), tanH = tanV * camera.aspect;
+      const usableH = wide ? 0.77 : 0.85, usableV = wide ? 0.85 : 0.55;
+      const fitWidth = SYSTEM_RADIUS / (tanH * usableH);
+      // 垂直：俯角約 20°，橢圓軌道的垂直半徑約為 0.4R，前方衛星因透視會再往下
+      const fitHeight = (SYSTEM_RADIUS * 0.4) / (tanV * usableV);
+      HOME_OFFSET.copy(HOME_DIR).multiplyScalar(Math.max(fitWidth, fitHeight, 24));
+      camera.updateProjectionMatrix();
+    }
+    addEventListener('resize', resize); resize();
+
+    const v = new THREE.Vector3(), v2 = new THREE.Vector3(), clock = new THREE.Clock();
+    const toScreen = (vec, w, h) => { v.copy(vec).project(camera); return { x: (v.x * 0.5 + 0.5) * w, y: (-v.y * 0.5 + 0.5) * h, z: v.z }; };
+    renderer.setAnimationLoop(() => {
+      const dt = Math.min(clock.getDelta(), 0.05), spin = reduceMotion ? 0 : 1;
+      me.rotation.y += dt * 0.08 * spin; clouds.rotation.y += dt * 0.03 * spin; stars.rotation.y += dt * 0.004 * spin;
+      ringSparks.children.forEach((s) => { s.userData.a += dt * 0.15 * spin; s.position.set(Math.cos(s.userData.a) * 3.6, Math.sin(s.userData.a) * 0.29, Math.sin(s.userData.a) * 3.6); });
+      sats.forEach((g) => {
+        const d = g.userData;
+        if (d.sat.id !== focusedSatId) d.angle += dt * d.speed * spin * (focusedSatId ? 0.25 : 1);
+        g.position.set(Math.cos(d.angle) * d.radius, Math.sin(d.angle * 1.3) * 0.4, Math.sin(d.angle) * d.radius);
+        d.body.rotation.y += dt * 0.15 * spin;
+        d.moons.forEach((m, k) => { m.userData.a += dt * (0.5 + k * 0.07) * spin; m.position.set(Math.cos(m.userData.a) * 1.55, 0, Math.sin(m.userData.a) * 1.55); });
+      });
+
+      const focus = sats.find((g) => g.userData.sat.id === focusedSatId);
+      if (focus) { targetGoal.copy(focus.position); camGoal.copy(focus.position).add(FOCUS_OFFSET); }
+      else { targetGoal.copy(HOME_TARGET); camGoal.copy(HOME_TARGET).add(HOME_OFFSET); }
+      // 飛入／飛出：指數緩動，抵達時自然減速
+      const k = 1 - Math.exp(-dt * 2.6);
+      target.lerp(targetGoal, k); camPos.lerp(camGoal, k);
+      camera.position.copy(camPos).add(v2.set(parallax.x * 1.2, -parallax.y * 0.8, 0).multiplyScalar(focus ? 0.3 : 1));
+      camera.lookAt(target);
+      // 星系往右平移：飛入衛星時回到正中央
+      const vw = host.clientWidth, vh = host.clientHeight;
+      viewShift += ((focus || vw <= WIDE_BREAKPOINT ? 0 : SHIFT_RIGHT) - viewShift) * k;
+      camera.setViewOffset(vw, vh, -viewShift * vw, 0, vw, vh);
+      renderer.render(scene, camera);
+
+      /* 標籤 + 引線（行星右上／左上斜出 → 短橫線 → 文字） */
+      const w = host.clientWidth, h = host.clientHeight;
+      const focalPx = h / (2 * Math.tan((camera.fov * Math.PI) / 360));
+      let paths = '';
+      const meScreen = toScreen(me.position, w, h), meDist = camera.position.distanceTo(me.position);
+      const meRadiusPx = (2.6 / meDist) * focalPx;
+      sats.forEach((g) => {
+        const el = satLabelEls.get(g.userData.sat.id); if (!el) return;
+        const sp = toScreen(g.position, w, h);
+        const rPx = (0.95 / camera.position.distanceTo(g.position)) * focalPx;
+        const left = sp.x < w * 0.55, dir = left ? -1 : 1;
+        const ax = sp.x + dir * rPx * 0.75, ay = sp.y - rPx * 0.75;
+        const bx = ax + dir * 26, by = ay - 26, cx = bx + dir * 14;
+        // 繞到 ME Planet 後方且被擋住時，先隱藏標籤
+        const behindMe = camera.position.distanceTo(g.position) > meDist && Math.hypot(sp.x - meScreen.x, sp.y - meScreen.y) < meRadiusPx + rPx * 0.4;
+        const hidden = sp.z > 1 || behindMe || (focusedSatId && g.userData.sat.id !== focusedSatId);
+        el.classList.toggle('is-left', left);
+        el.classList.toggle('is-dim', !!hidden);
+        el.style.left = left ? '' : `${cx + 8}px`;
+        el.style.right = left ? `${w - cx + 8}px` : '';
+        el.style.top = `${by - 14}px`;
+        if (!hidden) paths += `<path d="M${ax.toFixed(1)},${ay.toFixed(1)} L${bx.toFixed(1)},${by.toFixed(1)} L${cx.toFixed(1)},${by.toFixed(1)}"/>`;
+      });
+      leadersEl.innerHTML = paths;
+      const meEl = document.getElementById('me-label');
+      if (meEl) { const sp = toScreen(v2.set(0, -2.9, 0), w, h); meEl.style.left = `${sp.x}px`; meEl.style.top = `${sp.y + 10}px`; meEl.style.opacity = focusedSatId ? 0 : 1; }
+      moonLabels.forEach((l) => { const sp = toScreen(l.mesh.getWorldPosition(v2), w, h); l.el.style.left = `${sp.x}px`; l.el.style.top = `${sp.y}px`; });
+    });
+    return { build, buildMoonLabels };
+  }
+
+  function focusSatellite(id) {
+    focusedSatId = id;
+    const sat = id && db.satellites.find((s) => s.id === id);
+    crumb.hidden = !sat; if (sat) document.getElementById('crumb-current').textContent = sat.name;
+    document.getElementById('hero').classList.toggle('is-hidden', !!sat);
+    scene3d?.buildMoonLabels();
+  }
+  function rebuildUniverse() {
+    if (focusedSatId && !db.satellites.some((s) => s.id === focusedSatId)) focusedSatId = null;
+    renderNav(); scene3d?.build(); renderFallback(); focusSatellite(focusedSatId);
+  }
+
+  if (THREE && hasWebGL) { scene3d = createScene(); scene3d.build(); } else { setFallback(true); }
+  renderNav();
+
+  /* ───────────── 後台：登入 ───────────── */
+  let failed = 0;
+  function renderAttempts() { document.getElementById('login-attempts').innerHTML = Array.from({ length: 5 }, (_, i) => `<i class="${i < failed ? 'used' : ''}"></i>`).join(''); }
+  document.getElementById('login-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const pw = document.getElementById('password').value;
+    ['login-error', 'login-locked'].forEach((id) => document.getElementById(id).classList.remove('is-visible'));
+    document.getElementById('password-field').classList.toggle('is-error', !pw);
+    document.getElementById('password-error').hidden = !!pw;
+    if (!pw) return;                                                     // 400 REQUIRED_FIELD_EMPTY
+    if (failed >= 5) {                                                   // 429 LOGIN_LOCKED
+      const t = new Date(Date.now() + 15 * 60000);
+      document.getElementById('locked-until').textContent = `${t.getHours()}:${String(t.getMinutes()).padStart(2, '0')}`;
+      document.getElementById('login-locked').classList.add('is-visible'); return;
+    }
+    if (pw === 'Orbit#2026') { failed = 0; renderAttempts(); toast('歡迎回來'); showScreen('admin'); return; }
+    failed += 1; renderAttempts();                                       // 401 INVALID_PASSWORD
+    document.getElementById(failed >= 5 ? 'login-locked' : 'login-error').classList.add('is-visible');
+  });
+  renderAttempts();
+
+  /* ───────────── 後台：三欄管理 ───────────── */
+  let selSat = 1, selSub = 11, editing = null;   // editing = { kind, id } 或 { kind, id: 'new' }
+  const inlineForm = (kind, value = '') => `
+    <li><form class="inline-form" data-kind="${kind}" novalidate>
+      <div class="field"><label>名稱 <span class="counter">${[...value].length} / 50</span></label>
+        <input name="name" value="${esc(value)}" maxlength="60" autofocus placeholder="${kind === 'sat' ? '例如：天文' : '例如：星系'}">
+        <span class="error" hidden></span></div>
+      <div class="row"><button type="button" class="btn" data-cancel>取消</button><button class="btn btn-primary">儲存</button></div>
+    </form></li>`;
+  function rowHtml(kind, item, selected, meta) {
+    if (editing && editing.kind === kind && editing.id === item.id) return inlineForm(kind, item.name);
+    return `<li class="entity-row ${selected ? 'is-selected' : ''}" data-kind="${kind}" data-id="${item.id}" tabindex="0">
+      ${kind === 'sat' ? `<span class="row-planet" style="background:${paletteOf(item).css}"></span>` : ''}
+      <span class="name">${esc(item.name)}</span><span class="meta">${meta}</span>
+      <span class="row-actions">
+        <button class="btn btn-ghost btn-icon" data-edit aria-label="編輯 ${esc(item.name)}">✎</button>
+        <button class="btn btn-ghost btn-icon" data-delete aria-label="刪除 ${esc(item.name)}">🗑</button>
+      </span></li>`;
+  }
+  function renderAdmin() {
+    if (!db.satellites.some((s) => s.id === selSat)) selSat = satellites()[0]?.id ?? null;
+    if (!db.subs.some((u) => u.id === selSub && u.satellite_id === selSat)) selSub = subsOf(selSat)[0]?.id ?? null;
+    const sats = satellites();
+    document.getElementById('satellite-count').textContent = sats.length;
+    document.getElementById('satellite-list').innerHTML =
+      (editing?.kind === 'sat' && editing.id === 'new' ? inlineForm('sat') : '') +
+      (sats.map((s) => rowHtml('sat', s, s.id === selSat, `${subsOf(s.id).length} 子衛星`)).join('') || '<li class="column-empty">還沒有衛星，先新增一個知識領域吧</li>');
+    const sat = db.satellites.find((s) => s.id === selSat), subs = sat ? subsOf(sat.id) : [];
+    document.getElementById('sub-satellite-count').textContent = subs.length;
+    document.getElementById('sub-satellite-context').textContent = sat ? `「${sat.name}」底下 · 舊 → 新` : '請先選擇衛星';
+    document.getElementById('add-sub-satellite').disabled = !sat;
+    document.getElementById('sub-satellite-list').innerHTML = !sat ? '' :
+      (editing?.kind === 'sub' && editing.id === 'new' ? inlineForm('sub') : '') +
+      (subs.map((u) => rowHtml('sub', u, u.id === selSub, `${parasOf(u.id).length} 段落`)).join('') || '<li class="column-empty">這顆衛星還沒有子衛星</li>');
+    const sub = db.subs.find((u) => u.id === selSub), paras = sub ? parasOf(sub.id) : [];
+    document.getElementById('paragraph-count').textContent = paras.length;
+    document.getElementById('paragraph-context').textContent = sub ? `「${sat.name} › ${sub.name}」· 新 → 舊` : '請先選擇子衛星';
+    document.getElementById('add-paragraph').disabled = !sub;
+    document.getElementById('paragraph-list').innerHTML = !sub ? '' : paras.map((p) => `
+      <article class="paragraph-card" data-id="${p.id}">
+        <div class="top"><h3>${esc(p.title)}</h3>
+          <button class="btn btn-ghost btn-icon" data-edit-para="${p.id}" aria-label="編輯 ${esc(p.title)}">✎</button>
+          <button class="btn btn-ghost btn-icon" data-delete-para="${p.id}" aria-label="刪除 ${esc(p.title)}">🗑</button></div>
+        ${p.summary ? `<p>${esc(p.summary)}</p>` : '<p style="font-style:italic;opacity:.6">（無摘要）</p>'}
+        <span class="dates">建立 ${fmtDate(p.created_at)} · 更新 ${fmtDate(p.updated_at)}</span>
+      </article>`).join('') || '<div class="column-empty">還沒有段落<br>按「＋ 新增段落」寫下第一則筆記</div>';
+    bindAdmin();
+  }
+  function validateName(name, siblings, selfId) {
+    if (!name) return '名稱為必填';                                                            // 400 REQUIRED_FIELD_EMPTY
+    if ([...name].length > 50) return '名稱不可超過 50 字';                                     // 400 FIELD_TOO_LONG
+    if (siblings.some((s) => s.name === name && s.id !== selfId)) return `「${name}」已存在`;   // 409 NAME_DUPLICATED
+    return null;
+  }
+  function bindAdmin() {
+    document.querySelectorAll('.entity-row').forEach((row) => row.addEventListener('click', (e) => {
+      const id = +row.dataset.id, kind = row.dataset.kind;
+      if (e.target.closest('[data-edit]')) { editing = { kind, id }; renderAdmin(); return; }
+      if (e.target.closest('[data-delete]')) { askDelete(kind, id); return; }
+      if (kind === 'sat') { selSat = id; selSub = null; } else selSub = id;
+      editing = null; renderAdmin();
+    }));
+    document.querySelectorAll('.inline-form').forEach((f) => {
+      const input = f.querySelector('input'), counter = f.querySelector('.counter'), err = f.querySelector('.error');
+      input.addEventListener('input', () => { const n = [...input.value].length; counter.textContent = `${n} / 50`; counter.classList.toggle('is-over', n > 50); });
+      f.querySelector('[data-cancel]').onclick = () => { editing = null; renderAdmin(); };
+      f.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = input.value, kind = f.dataset.kind;
+        const problem = validateName(name, kind === 'sat' ? db.satellites : subsOf(selSat), editing.id);
+        if (problem) { err.textContent = problem; err.hidden = false; f.querySelector('.field').classList.add('is-error'); return; }
+        if (editing.id === 'new') {
+          const item = { id: nextId++, name, created_at: new Date().toISOString() };
+          if (kind === 'sat') { db.satellites.push(item); selSat = item.id; } else { db.subs.push({ ...item, satellite_id: selSat }); selSub = item.id; }
+          toast(`已新增${kind === 'sat' ? '衛星' : '子衛星'}「${name}」`);
+        } else {
+          (kind === 'sat' ? db.satellites : db.subs).find((x) => x.id === editing.id).name = name; toast('已儲存');
+        }
+        editing = null; renderAdmin();
+      });
+    });
+    document.querySelectorAll('[data-edit-para]').forEach((b) => b.onclick = () => openParagraphForm(+b.dataset.editPara));
+    document.querySelectorAll('[data-delete-para]').forEach((b) => b.onclick = () => askDelete('para', +b.dataset.deletePara));
+  }
+  document.getElementById('add-satellite').onclick = () => { editing = { kind: 'sat', id: 'new' }; renderAdmin(); };
+  document.getElementById('add-sub-satellite').onclick = () => { editing = { kind: 'sub', id: 'new' }; renderAdmin(); };
+  document.getElementById('add-paragraph').onclick = () => openParagraphForm(null);
+  function askDelete(kind, id) {
+    const label = { sat: '衛星', sub: '子衛星', para: '段落' }[kind];
+    const item = kind === 'sat' ? db.satellites.find((s) => s.id === id) : kind === 'sub' ? db.subs.find((u) => u.id === id) : db.paragraphs.find((p) => p.id === id);
+    const name = item.name ?? item.title;
+    confirmDelete(`刪除${label}「${name}」？`, '刪除後無法復原。', () => {
+      const children = kind === 'sat' ? subsOf(id).length : kind === 'sub' ? parasOf(id).length : 0;
+      if (children) { toast(`「${name}」底下還有 ${children} 個${kind === 'sat' ? '子衛星' : '段落'}，請先刪除它們`, true); return; }  // 409 HAS_CHILDREN
+      if (kind === 'sat') db.satellites = db.satellites.filter((s) => s.id !== id);
+      if (kind === 'sub') db.subs = db.subs.filter((u) => u.id !== id);
+      if (kind === 'para') db.paragraphs = db.paragraphs.filter((p) => p.id !== id);
+      toast(`已刪除${label}「${name}」`); renderAdmin();
+    });
+  }
+
+  /* ───────────── 後台：段落抽屜（rich text） ───────────── */
+  const pForm = document.getElementById('paragraph-form'), pBackdrop = document.getElementById('paragraph-form-backdrop');
+  const pTitle = document.getElementById('paragraph-title'), pSummary = document.getElementById('paragraph-summary'), pContent = document.getElementById('paragraph-content');
+  let editingParaId = null;
+  function openParagraphForm(id) {
+    editingParaId = id;
+    const p = db.paragraphs.find((x) => x.id === id);
+    document.getElementById('paragraph-form-title').textContent = p ? '編輯段落' : '新增段落';
+    pTitle.value = p?.title ?? ''; pSummary.value = p?.summary ?? ''; pContent.innerHTML = p?.content ?? '';
+    ['title-error', 'content-error'].forEach((x) => document.getElementById(x).hidden = true);
+    document.getElementById('title-field').classList.remove('is-error');
+    updateTitleCounter();
+    pForm.classList.add('is-open'); pBackdrop.classList.add('is-open'); setTimeout(() => pTitle.focus(), 300);
+  }
+  function closeParagraphForm() { pForm.classList.remove('is-open'); pBackdrop.classList.remove('is-open'); }
+  function updateTitleCounter() { const n = [...pTitle.value].length, c = document.getElementById('title-counter'); c.textContent = `${n} / 100`; c.classList.toggle('is-over', n > 100); }
+  pTitle.addEventListener('input', updateTitleCounter);
+  ['paragraph-form-close', 'paragraph-form-cancel'].forEach((x) => document.getElementById(x).onclick = closeParagraphForm);
+  pBackdrop.onclick = closeParagraphForm;
+  document.querySelectorAll('.editor-toolbar [data-cmd]').forEach((b) => b.addEventListener('click', () => { pContent.focus(); document.execCommand(b.dataset.cmd, false, b.dataset.arg); }));
+  pForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const title = pTitle.value.trim() ? pTitle.value : '', content = pContent.textContent.trim() ? pContent.innerHTML : '';
+    const titleErr = !title ? '標題為必填' : [...title].length > 100 ? '標題不可超過 100 字' : '';
+    document.getElementById('title-error').textContent = titleErr; document.getElementById('title-error').hidden = !titleErr;
+    document.getElementById('title-field').classList.toggle('is-error', !!titleErr);
+    document.getElementById('content-error').hidden = !!content;
+    if (titleErr || !content) return;
+    const now = new Date().toISOString(), summary = pSummary.value || null;   // 編輯為整筆覆蓋：摘要留空即清空
+    if (editingParaId) Object.assign(db.paragraphs.find((p) => p.id === editingParaId), { title, summary, content, updated_at: now });
+    else db.paragraphs.push({ id: nextId++, sub_satellite_id: selSub, title, summary, content, created_at: now, updated_at: now });
+    toast(editingParaId ? '段落已更新' : '段落已新增'); closeParagraphForm(); renderAdmin();
+  });
+</script>
+</body>
+</html>

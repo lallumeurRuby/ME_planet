@@ -63,3 +63,20 @@ ALEMBIC_VERSIONS_DIR: ${BACKEND_DIR}/alembic/versions
 
 # Feature 規格目錄（移入後端專案後）
 FEATURE_SPECS_DIR: ${PY_TEST_FEATURES_DIR}
+
+# ── 前端專案（Next.js + MSW） ─────────────────────────
+FRONTEND_DIR: frontend
+SRC_DIR: ${FRONTEND_DIR}/src
+TYPES_DIR: ${SRC_DIR}/lib/types
+API_CLIENT_DIR: ${SRC_DIR}/lib/api
+MSW_DIR: ${SRC_DIR}/mocks
+HANDLERS_DIR: ${MSW_DIR}/handlers
+FRONTEND_FEATURES_DIR: ${FRONTEND_DIR}/features
+PAGE_OBJECTS_DIR: ${FRONTEND_DIR}/page-objects
+STEPS_DIR: ${FRONTEND_DIR}/steps
+
+# Three.js 變體（3D 宇宙前台）
+tech_flavor: threejs
+THREEJS_SCENES_DIR: ${SRC_DIR}/scenes
+THREEJS_SHADERS_DIR: ${SRC_DIR}/shaders
+THREEJS_COMPONENTS_3D_DIR: ${SRC_DIR}/components/3d

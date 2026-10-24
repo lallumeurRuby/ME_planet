@@ -59,7 +59,7 @@ carry-on Step 06.2 觸發時：
 |---|--------|------|------|
 | 06.1 | Frontend 骨架 | `/Users/peiruwu/Desktop/Portfolio/ME_planet/frontend/` | PENDING |
 | 06.2 | MSW Handlers | `/Users/peiruwu/Desktop/Portfolio/ME_planet/frontend/src/mocks/handlers/` | PENDING |
-| 06.3 | Pages | `/Users/peiruwu/Desktop/Portfolio/ME_planet/frontend/src/pages/` | PENDING |
+| 06.3 | Pages | `/Users/peiruwu/Desktop/Portfolio/ME_planet/frontend/src/app/` | PENDING |
 
 ### 驗收點
 
