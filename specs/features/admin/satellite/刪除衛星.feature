@@ -1,21 +1,54 @@
-@ignore @command
+@command
 Feature: 刪除衛星
 
   Background:
-    Given 擁有者已以密碼登入並取得有效 JWT
-    And 系統中存在至少一個 Satellite
+    Given 擁有者已登入
+    And 系統中有以下衛星：
+      | name     | created_at       |
+      | 天文     | 2026-01-01 00:00 |
+      | 程式設計 | 2026-01-02 00:00 |
+    And 系統中有以下子衛星：
+      | satellite_id | name | created_at       |
+      | $天文.id     | 星系 | 2026-02-01 00:00 |
 
   Rule: 前置（身份）- 未帶 JWT 或 JWT 無效／過期（有效期 24 小時）時拒絕操作，回傳 401 Unauthorized
 
+    Scenario Outline: JWT 為「<jwt_state>」時拒絕刪除
+      Given 擁有者的 JWT 狀態為 "<jwt_state>"
+      When 擁有者刪除衛星 "$程式設計.id"
+      Then 操作失敗，狀態碼為 401，錯誤代碼為 "UNAUTHORIZED"
+
+      Examples:
+        | jwt_state |
+        | 未帶      |
+        | 已過期    |
+        | 無效      |
+
   Rule: 前置（確認）- 刪除前必須顯示確認對話框，使用者主動確認後才執行刪除
+    # @frontend：Phase 06 驗證
 
   Rule: 前置（護欄）- 只有 SubSatellite 清單為空的 Satellite 才可刪除
     # 原文：「確保所屬下層資料為空才可以刪除」
 
+    Example: 衛星底下仍有子衛星時拒絕刪除
+      When 擁有者刪除衛星 "$天文.id"
+      Then 操作失敗，狀態碼為 409，錯誤代碼為 "HAS_CHILDREN"
+      And 系統中應有以下衛星：
+        | id       | name |
+        | $天文.id | 天文 |
+
   Rule: 後置（狀態）- 刪除成功後 Satellite 從清單消失
+
+    Example: 刪除沒有子衛星的衛星
+      When 擁有者刪除衛星 "$程式設計.id"
+      Then 操作成功
+      And 系統中不應有衛星 "程式設計"
 
   Rule: 後置（錯誤）- 目標 Satellite 不存在時回傳 404 Not Found
 
-  Rule: 後置（錯誤）- SubSatellite 清單非空時拒絕刪除，回傳 409 Conflict
+    Example: 目標衛星不存在時拒絕刪除
+      When 擁有者刪除衛星 "99999"
+      Then 操作失敗，狀態碼為 404，錯誤代碼為 "NOT_FOUND"
 
-  # ⚠ Example 區段：使用者未提供具體案例，暫不生成。待澄清後補充。
+  Rule: 後置（錯誤）- SubSatellite 清單非空時拒絕刪除，回傳 409 Conflict
+    # 由「前置（護欄）」的 Examples 覆蓋

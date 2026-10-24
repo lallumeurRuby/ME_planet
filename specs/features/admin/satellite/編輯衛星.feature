@@ -1,26 +1,92 @@
-@ignore @command
+@command
 Feature: 編輯衛星
 
   Background:
-    Given 擁有者已以密碼登入並取得有效 JWT
-    And 系統中存在至少一個 Satellite
+    Given 擁有者已登入
+    And 系統中有以下衛星：
+      | name     | created_at       |
+      | 天文     | 2026-01-01 00:00 |
+      | 程式設計 | 2026-01-02 00:00 |
 
   Rule: 前置（身份）- 未帶 JWT 或 JWT 無效／過期（有效期 24 小時）時拒絕操作，回傳 401 Unauthorized
 
+    Scenario Outline: JWT 為「<jwt_state>」時拒絕編輯
+      Given 擁有者的 JWT 狀態為 "<jwt_state>"
+      When 擁有者編輯衛星：
+        | satellite_id | name   |
+        | $天文.id     | 天文學 |
+      Then 操作失敗，狀態碼為 401，錯誤代碼為 "UNAUTHORIZED"
+
+      Examples:
+        | jwt_state |
+        | 未帶      |
+        | 已過期    |
+        | 無效      |
+
   Rule: 前置（存在）- 目標 Satellite 必須存在
+
+    Example: 目標衛星不存在時拒絕編輯
+      When 擁有者編輯衛星：
+        | satellite_id | name   |
+        | 99999        | 天文學 |
+      Then 操作失敗，狀態碼為 404，錯誤代碼為 "NOT_FOUND"
 
   Rule: 前置（欄位）- 名稱（name）為必填，不可為空，長度上限 50 字
 
+    Scenario Outline: 名稱不合法時拒絕編輯（<case>）
+      When 擁有者編輯衛星：
+        | satellite_id | name   |
+        | $天文.id     | <name> |
+      Then 操作失敗，狀態碼為 400，錯誤代碼為 "<code>"
+
+      Examples:
+        | case    | name     | code                 |
+        | 名稱為空 | ""       | REQUIRED_FIELD_EMPTY |
+        | 51 字   | 星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星 | FIELD_TOO_LONG       |
+
+    Example: 名稱剛好 50 字時可編輯
+      When 擁有者編輯衛星：
+        | satellite_id | name     |
+        | $天文.id     | 星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星 |
+      Then 操作成功
+      And 系統中應有以下衛星：
+        | id       | name     |
+        | $天文.id | 星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星星 |
+
   Rule: 前置（唯一）- Satellite 名稱（name）全域唯一
+
+    Example: 名稱與其他衛星重複時拒絕編輯
+      When 擁有者編輯衛星：
+        | satellite_id | name     |
+        | $天文.id     | 程式設計 |
+      Then 操作失敗，狀態碼為 409，錯誤代碼為 "NAME_DUPLICATED"
+
+    Example: 改成自己現有的名稱不算重複
+      When 擁有者編輯衛星：
+        | satellite_id | name |
+        | $天文.id     | 天文 |
+      Then 操作成功
 
   Rule: 後置（狀態）- 編輯成功後 Satellite 資料更新
 
+    Example: 編輯成功後名稱更新
+      When 擁有者編輯衛星：
+        | satellite_id | name   |
+        | $天文.id     | 天文學 |
+      Then 操作成功
+      And 系統中應有以下衛星：
+        | id           | name     |
+        | $天文.id     | 天文學   |
+        | $程式設計.id | 程式設計 |
+
   Rule: 後置（錯誤）- 必填欄位為空時拒絕更新，回傳 400 Bad Request
+    # 由「前置（欄位）」的 Examples 覆蓋
 
   Rule: 後置（錯誤）- 目標 Satellite 不存在時回傳 404 Not Found
+    # 由「前置（存在）」的 Examples 覆蓋
 
   Rule: 後置（錯誤）- 名稱重複時拒絕，回傳 409 Conflict
+    # 由「前置（唯一）」的 Examples 覆蓋
 
   Rule: 後置（錯誤）- 名稱超過 50 字時拒絕，回傳 400 Bad Request
-
-  # ⚠ Example 區段：使用者未提供具體案例，暫不生成。待澄清後補充。
+    # 由「前置（欄位）」的 Examples 覆蓋
