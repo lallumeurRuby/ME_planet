@@ -1,15 +1,25 @@
 import os
+import sys
+from pathlib import Path
 from types import SimpleNamespace
 
-from alembic import command
-from alembic.config import Config
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from testcontainers.postgres import PostgresContainer
 
+from alembic import command
+from alembic.config import Config
 from app.core.deps import set_session_factory
 from app.main import create_app
 from app.models import Base
+
+# Docker Desktop (macOS) 無法掛載 Ryuk 所需的 docker.sock；容器由 after_all 自行停止
+os.environ.setdefault("TESTCONTAINERS_RYUK_DISABLED", "true")
+
+# 讓 steps 可 `from helpers.xxx import ...`
+sys.path.insert(0, str(Path(__file__).parent))
+
+from helpers.jwt_helper import JwtHelper  # noqa: E402
 
 postgres_container = None
 engine = None
@@ -22,9 +32,7 @@ def before_all(context):
     postgres_container = PostgresContainer("postgres:15")
     postgres_container.start()
 
-    db_url = postgres_container.get_connection_url().replace(
-        "psycopg2", "psycopg"
-    )
+    db_url = postgres_container.get_connection_url().replace("psycopg2", "psycopg")
     os.environ["DATABASE_URL"] = db_url
 
     engine = create_engine(db_url)
@@ -51,6 +59,7 @@ def before_scenario(context, scenario):
     from starlette.testclient import TestClient
 
     context.api_client = TestClient(app)
+    context.jwt_helper = JwtHelper()
     context.repos = SimpleNamespace()
     context.services = SimpleNamespace()
 
@@ -60,9 +69,7 @@ def after_scenario(context, scenario):
         context.db_session.rollback()
         # Truncate all tables except alembic_version
         for table in reversed(Base.metadata.sorted_tables):
-            context.db_session.execute(
-                text(f"TRUNCATE TABLE {table.name} CASCADE")
-            )
+            context.db_session.execute(text(f"TRUNCATE TABLE {table.name} CASCADE"))
         context.db_session.commit()
         context.db_session.close()
 

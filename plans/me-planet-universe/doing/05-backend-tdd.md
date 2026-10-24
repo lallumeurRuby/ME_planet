@@ -67,10 +67,10 @@ carry-on Step 05.2 觸發時：
 
 | # | 交付物 | 路徑 | 狀態 |
 |---|--------|------|------|
-| 05.1 | Step Definitions | `/Users/peiruwu/Desktop/Portfolio/ME_planet/features/steps/` | PENDING |
-| 05.2 | Domain Models | `/Users/peiruwu/Desktop/Portfolio/ME_planet/app/models/` | PENDING |
-| 05.3 | API Endpoints | `/Users/peiruwu/Desktop/Portfolio/ME_planet/app/api/` | PENDING |
-| 05.4 | DB Migrations | `/Users/peiruwu/Desktop/Portfolio/ME_planet/alembic/versions/` | PENDING |
+| 05.1 | Step Definitions | `/Users/peiruwu/Desktop/Portfolio/ME_planet/backend/tests/features/steps/` | PENDING |
+| 05.2 | Domain Models | `/Users/peiruwu/Desktop/Portfolio/ME_planet/backend/app/models/` | PENDING |
+| 05.3 | API Endpoints | `/Users/peiruwu/Desktop/Portfolio/ME_planet/backend/app/api/` | PENDING |
+| 05.4 | DB Migrations | `/Users/peiruwu/Desktop/Portfolio/ME_planet/backend/alembic/versions/` | PENDING |
 | 05.5 | 回歸測試結果 | 回歸測試全通過 | PENDING |
 
 ### 驗收點

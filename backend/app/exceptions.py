@@ -1,10 +1,8 @@
-class BusinessError(Exception):
-    def __init__(self, violation_type: str):
-        self.violation_type = violation_type
-        super().__init__(violation_type)
+class AppError(Exception):
+    """對應 api.yml Error schema：{ code, message }。"""
 
-
-class NotFoundError(Exception):
-    def __init__(self, message: str = "Resource not found"):
+    def __init__(self, status_code: int, code: str, message: str):
+        self.status_code = status_code
+        self.code = code
         self.message = message
-        super().__init__(message)
+        super().__init__(f"{code}: {message}")

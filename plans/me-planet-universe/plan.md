@@ -2,7 +2,7 @@
 
 > **狀態**: IN_PROGRESS
 > **建立日期**: 2026-10-23
-> **最後更新**: 2026-10-23
+> **最後更新**: 2026-10-24
 > **技術棧**: python (e2e)
 > **需求摘要**: 建立 ME Planet 知識衛星宇宙個人網站：互動式 3D 前台（Satellite/SubSatellite/Paragraph 探索）+ 後台管理介面（CRUD，刪除需確保子資料為空）。
 
@@ -14,9 +14,9 @@
 |-------|------|------------|------|
 | 01 | Requirement Analysis（需求分析 + 影響評估 + 行為設計） | — | done |
 | 02 | Entity Modeling（外部品質 — 資料） | 01 | done |
-| 03 | BDD Analysis（外部品質 — 可執行規格） | 02 | doing |
-| 04 | API Contract（內部品質） | 03 | todo |
-| 05 | Backend TDD Track | 04 | todo |
+| 03 | BDD Analysis（外部品質 — 可執行規格） | 02 | done |
+| 04 | API Contract（內部品質） | 03 | done |
+| 05 | Backend TDD Track | 04 | doing |
 | 06 | Frontend Build Track | 04 | todo |
 | 07 | Integration Validation | 05, 06 | todo |
 
@@ -69,7 +69,7 @@ Phase 01-04 的產出物是 Phase 05-07 的共同依據（Single Source of Truth
 |------|------|--------|
 | Execution Plan | `plans/me-planet-universe/plan.md` | Phase 02-07（scope 依據） |
 | Activity Diagrams | `specs/activities/` | Phase 06（Chrome Test Guard 測試計畫結構） |
-| Feature Files（含 Examples） | `specs/features/` | Phase 05（TDD 循環） |
+| Feature Files（含 Examples） | `backend/tests/features/` | Phase 05（TDD 循環） |
 | erm.dbml | `specs/entity/erm.dbml` | Phase 05（Schema Analysis） |
 | api.yml | `specs/api/api.yml` | Phase 05（Red 欄位守衛）、Phase 06（MSW handlers）、Phase 07（驗證基準） |
 

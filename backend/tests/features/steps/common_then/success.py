@@ -3,6 +3,10 @@ from behave import then
 
 @then("操作成功")
 def step_then_success(context):
-    assert context.last_response is not None, "No response received"
-    resp = context.last_response.json()
-    assert resp.get("success") is True, f"Expected success=true, got {resp}"
+    response = context.last_response
+    assert response is not None, "尚未收到任何回應"
+    assert response.status_code in (
+        200,
+        201,
+        204,
+    ), f"預期成功（200/201/204），實際 {response.status_code}：{response.text}"
