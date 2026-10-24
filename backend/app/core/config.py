@@ -4,7 +4,7 @@ import os
 class Settings:
     DATABASE_URL: str = os.getenv(
         "DATABASE_URL",
-        "postgresql+psycopg://postgres:postgres@localhost:5432/me_planet_api_dev",
+        "postgresql+psycopg://postgres:postgres@localhost:5433/me_planet_api_dev",
     )
     API_PREFIX: str = "/api"
 

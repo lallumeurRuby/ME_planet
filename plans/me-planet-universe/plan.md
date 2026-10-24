@@ -17,8 +17,8 @@
 | 03 | BDD Analysis（外部品質 — 可執行規格） | 02 | done |
 | 04 | API Contract（內部品質） | 03 | done |
 | 05 | Backend TDD Track | 04 | done |
-| 06 | Frontend Build Track | 04 | doing |
-| 07 | Integration Validation | 05, 06 | todo |
+| 06 | Frontend Build Track | 04 | done |
+| 07 | Integration Validation | 05, 06 | doing |
 
 ```
 01 → 02 → 03 → 04 ──┬──→ 05 ──┐

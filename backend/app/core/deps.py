@@ -3,6 +3,7 @@ from collections.abc import Iterator
 import jwt
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config import settings
@@ -16,10 +17,18 @@ def set_session_factory(factory: sessionmaker[Session]) -> None:
     _session_factory = factory
 
 
-def get_db() -> Iterator[Session]:
+def get_session_factory() -> sessionmaker[Session]:
+    """測試環境會先注入 factory；正式執行（uvicorn）時依 DATABASE_URL 建立。"""
+    global _session_factory
     if _session_factory is None:
-        raise RuntimeError("Session factory not initialized")
-    session: Session = _session_factory()
+        _session_factory = sessionmaker(
+            bind=create_engine(settings.DATABASE_URL, pool_pre_ping=True)
+        )
+    return _session_factory
+
+
+def get_db() -> Iterator[Session]:
+    session: Session = get_session_factory()()
     try:
         yield session
         session.commit()
