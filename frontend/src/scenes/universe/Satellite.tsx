@@ -83,7 +83,7 @@ export function Satellite({
 
     moons.current.forEach((moon, k) => {
       if (!moon) return
-      const a = (moonAngles.current[k] = (moonAngles.current[k] ?? 0) + dt * (0.5 + k * 0.07) * spin)
+      const a = (moonAngles.current[k] = (moonAngles.current[k] ?? 0) + dt * (0.1 + k * 0.03) * spin)
       moon.position.set(Math.cos(a) * MOON_ORBIT_RADIUS, 0, Math.sin(a) * MOON_ORBIT_RADIUS)
       const world = registry.moonPositions.get(subSatellites[k].id) ?? new Vector3()
       registry.moonPositions.set(subSatellites[k].id, moon.getWorldPosition(world))
