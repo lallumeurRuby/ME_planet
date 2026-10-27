@@ -61,8 +61,8 @@ PY_ENV_FILE: ${PY_TEST_FEATURES_DIR}/environment.py
 # Alembic 遷移目錄
 ALEMBIC_VERSIONS_DIR: ${BACKEND_DIR}/alembic/versions
 
-# Feature 規格目錄（移入後端專案後）
-FEATURE_SPECS_DIR: ${PY_TEST_FEATURES_DIR}
+# Feature 規格目錄（2026-10-27 改為靜態網站，移至前端）
+FEATURE_SPECS_DIR: ${FRONTEND_DIR}/features
 
 # ── 前端專案（Next.js + MSW） ─────────────────────────
 FRONTEND_DIR: frontend
