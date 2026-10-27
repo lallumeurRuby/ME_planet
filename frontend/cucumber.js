@@ -9,6 +9,7 @@ module.exports = {
       'steps/**/*.steps.ts',
     ],
     paths: ['features/**/*.feature'],
+    tags: 'not @ignore',
     format: ['progress', 'summary'],
     timeout: 30000,
   },
