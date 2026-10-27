@@ -27,18 +27,8 @@ Feature: 刪除子衛星
         | 已過期    |
         | 無效      |
 
-  Rule: 前置（確認）- 刪除前必須顯示確認對話框，使用者主動確認後才執行刪除
+  Rule: 前置（確認）- 刪除前必須顯示確認對話框，並以固定警告文字提示「底下所有段落將一併刪除，無法復原」，使用者主動確認後才執行刪除
     # @frontend：Phase 06 驗證
-
-  Rule: 前置（護欄）- 只有 Paragraph 清單為空的 SubSatellite 才可刪除
-    # 原文：「確保所屬下層資料為空才可以刪除」
-
-    Example: 子衛星底下仍有段落時拒絕刪除
-      When 擁有者刪除子衛星 "$星系.id"
-      Then 操作失敗，狀態碼為 409，錯誤代碼為 "HAS_CHILDREN"
-      And 系統中應有以下子衛星：
-        | id       | satellite_id | name |
-        | $星系.id | $天文.id     | 星系 |
 
   Rule: 後置（狀態）- 刪除成功後 SubSatellite 從清單消失
 
@@ -47,11 +37,14 @@ Feature: 刪除子衛星
       Then 操作成功
       And 系統中不應有子衛星 "行星"
 
+  Rule: 後置（狀態）- 子衛星底下仍有 Paragraph 時也可刪除，所屬 Paragraph 一併刪除
+    # 原文：「不需要下層內容為空才能刪除，只要確認彈窗按下確認即可刪除」（取代原「前置（護欄）」409 HAS_CHILDREN）
+    # 澄清 2026-10-27 Q2：一併刪除（cascade）
+    # Example 待 Phase 03 BDD Analysis 補齊
+
   Rule: 後置（錯誤）- 目標 SubSatellite 不存在時回傳 404 Not Found
 
     Example: 目標子衛星不存在時拒絕刪除
       When 擁有者刪除子衛星 "99999"
       Then 操作失敗，狀態碼為 404，錯誤代碼為 "NOT_FOUND"
 
-  Rule: 後置（錯誤）- Paragraph 清單非空時拒絕刪除，回傳 409 Conflict
-    # 由「前置（護欄）」的 Examples 覆蓋

@@ -11,6 +11,12 @@ flowchart TD
     %% [STEP:1] @Visitor {features/visitor/universe/瀏覽3D宇宙.feature}
     S1["@Visitor<br/>進入網站，3D 宇宙自動慢速旋轉<br/>（ME Planet + 所有 Satellite 環繞）"]
 
+    %% [DECISION:1a] 點擊對象
+    D1a{"點擊對象"}
+
+    %% [BRANCH:1a:ME Planet] @Visitor {features/visitor/universe/查看ME星球.feature}
+    B1a_planet["@Visitor<br/>點擊 ME Planet → 相機不動，Modal 彈出<br/>顯示 ME Planet 內容"]
+
     %% [STEP:2] @Visitor {features/visitor/universe/探索衛星.feature}
     S2["@Visitor<br/>點擊 Satellite → 相機飛入近景<br/>SubSatellite 環繞在周圍顯示"]
 
@@ -22,6 +28,9 @@ flowchart TD
 %% ═══ 區段三：邊定義 ═══
 
     Start --> S1
-    S1 --> S2
+    S1 --> D1a
+    D1a -- ME Planet --> B1a_planet
+    D1a -- Satellite --> S2
+    B1a_planet --> End
     S2 --> S3
     S3 --> End

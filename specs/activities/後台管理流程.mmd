@@ -28,16 +28,7 @@ flowchart TD
     B2a_edit["@Owner<br/>編輯 Satellite"]
 
     %% [BRANCH:2a:刪除] @Owner {features/admin/satellite/刪除衛星.feature}
-    B2a_delete["@Owner<br/>發送刪除 Satellite 請求"]
-
-    %% [DECISION:2b] 確認 SubSatellite 清單是否為空
-    D2b{"SubSatellite 清單為空？"}
-
-    %% [BRANCH:2b:是] @Owner {features/admin/satellite/刪除衛星.feature}
-    B2b_empty["@Owner<br/>Satellite 刪除成功"]
-
-    %% [BRANCH:2b:否] @Owner {features/admin/satellite/刪除衛星.feature}
-    B2b_notempty["@Owner<br/>刪除被拒（409，SubSatellite 非空）"]
+    B2a_delete["@Owner<br/>確認對話框 → 刪除 Satellite<br/>（連同所屬 SubSatellite 與 Paragraph）"]
 
     %% [MERGE:2a]
     M2a(( ))
@@ -56,16 +47,7 @@ flowchart TD
     B3a_edit["@Owner<br/>編輯 SubSatellite"]
 
     %% [BRANCH:3a:刪除] @Owner {features/admin/sub_satellite/刪除子衛星.feature}
-    B3a_delete["@Owner<br/>發送刪除 SubSatellite 請求"]
-
-    %% [DECISION:3b] 確認 Paragraph 清單是否為空
-    D3b{"Paragraph 清單為空？"}
-
-    %% [BRANCH:3b:是] @Owner {features/admin/sub_satellite/刪除子衛星.feature}
-    B3b_empty["@Owner<br/>SubSatellite 刪除成功"]
-
-    %% [BRANCH:3b:否] @Owner {features/admin/sub_satellite/刪除子衛星.feature}
-    B3b_notempty["@Owner<br/>刪除被拒（409，Paragraph 非空）"]
+    B3a_delete["@Owner<br/>確認對話框 → 刪除 SubSatellite<br/>（連同所屬 Paragraph）"]
 
     %% [MERGE:3a]
     M3a(( ))
@@ -89,6 +71,13 @@ flowchart TD
     %% [MERGE:4a]
     M4a(( ))
 
+    %% ── ME Planet 內容管理 ──
+    %% [STEP:5] @Owner {features/visitor/universe/查看ME星球.feature}
+    S5["@Owner<br/>查看 ME Planet 內容"]
+
+    %% [STEP:6] @Owner {features/admin/me_planet/編輯ME星球內容.feature}
+    S6["@Owner<br/>編輯 ME Planet 內容（單一內容，僅可編輯）"]
+
     End((( )))
 
 %% ═══ 區段三：邊定義 ═══
@@ -99,6 +88,7 @@ flowchart TD
     D1a -- Satellite管理 --> S2
     D1a -- SubSatellite管理 --> S3
     D1a -- Paragraph管理 --> S4
+    D1a -- ME Planet內容管理 --> S5
 
     S2 --> D2a
     D2a -- 新增 --> B2a_create
@@ -106,11 +96,7 @@ flowchart TD
     D2a -- 刪除 --> B2a_delete
     B2a_create --> M2a
     B2a_edit --> M2a
-    B2a_delete --> D2b
-    D2b -- 是 --> B2b_empty
-    D2b -- 否 --> B2b_notempty
-    B2b_empty --> M2a
-    B2b_notempty --> M2a
+    B2a_delete --> M2a
     M2a --> End
 
     S3 --> D3a
@@ -119,11 +105,7 @@ flowchart TD
     D3a -- 刪除 --> B3a_delete
     B3a_create --> M3a
     B3a_edit --> M3a
-    B3a_delete --> D3b
-    D3b -- 是 --> B3b_empty
-    D3b -- 否 --> B3b_notempty
-    B3b_empty --> M3a
-    B3b_notempty --> M3a
+    B3a_delete --> M3a
     M3a --> End
 
     S4 --> D4a
@@ -134,3 +116,6 @@ flowchart TD
     B4a_edit --> M4a
     B4a_delete --> M4a
     M4a --> End
+
+    S5 --> S6
+    S6 --> End
