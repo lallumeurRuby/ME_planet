@@ -9,7 +9,6 @@ export const ErrorCodeSchema = z.enum([
   'FIELD_TOO_LONG',
   'NOT_FOUND',
   'NAME_DUPLICATED',
-  'HAS_CHILDREN',
 ])
 export type ErrorCode = z.infer<typeof ErrorCodeSchema>
 

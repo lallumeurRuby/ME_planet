@@ -17,7 +17,7 @@ export function updateSatellite(satelliteId: number, body: SatelliteInput): Prom
   return apiClient<Satellite>(`/satellites/${satelliteId}`, { method: 'PUT', body: JSON.stringify(body) })
 }
 
-/** DELETE /satellites/{satelliteId}（operationId: deleteSatellite）— 底下仍有子衛星時 409 HAS_CHILDREN */
+/** DELETE /satellites/{satelliteId}（operationId: deleteSatellite）— 連帶刪除其子衛星與段落 */
 export function deleteSatellite(satelliteId: number): Promise<void> {
   return apiClient<void>(`/satellites/${satelliteId}`, { method: 'DELETE' })
 }

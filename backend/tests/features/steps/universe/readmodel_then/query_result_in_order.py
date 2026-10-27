@@ -34,3 +34,15 @@ def step_then_query_result_in_order(context):
             expected = _expected(context, field, row[field])
             actual = _actual(field, item.get(field))
             assert actual == expected, f"第 {index} 筆的 {field} 預期 {expected!r}，實際 {actual!r}"
+
+
+@then("查詢結果應為：")
+def step_then_query_result_is(context):
+    """單一物件（單列 Data Table）；只比對表頭列出的欄位。"""
+    data = context.last_response.json()
+    assert isinstance(data, dict), f"預期回傳單一物件，實際 {data}"
+    row = context.table[0]
+    for field in row.headings:
+        expected = _expected(context, field, row[field])
+        actual = _actual(field, data.get(field))
+        assert actual == expected, f"{field} 預期 {expected!r}，實際 {actual!r}"

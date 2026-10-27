@@ -49,14 +49,13 @@ export const subSatelliteHandlers = [
     return HttpResponse.json(subSatellite)
   }),
 
-  // DELETE /sub-satellites/:subSatelliteId（底下須無段落）
+  // DELETE /sub-satellites/:subSatelliteId（連帶刪除其段落）
   http.delete(`${API}/sub-satellites/:subSatelliteId`, ({ request, params }) => {
     const unauthorized = requireOwner(request)
     if (unauthorized) return unauthorized
     const subSatellite = findSubSatellite(params.subSatelliteId)
     if (!subSatellite) return errorResponse(404, 'NOT_FOUND', `找不到子衛星 ${params.subSatelliteId}`)
-    if (db.paragraphs.some((p) => p.sub_satellite_id === subSatellite.id))
-      return errorResponse(409, 'HAS_CHILDREN', '子衛星底下仍有段落，無法刪除')
+    db.paragraphs = db.paragraphs.filter((p) => p.sub_satellite_id !== subSatellite.id)
     db.subSatellites = db.subSatellites.filter((u) => u.id !== subSatellite.id)
     return new HttpResponse(null, { status: 204 })
   }),

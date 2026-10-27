@@ -7,7 +7,7 @@ from app.models import Base
 
 
 class Satellite(Base):
-    """知識領域（衛星）。name 全域唯一；底下仍有子衛星時不可刪除。"""
+    """知識領域（衛星）。name 全域唯一；刪除時連帶刪除底下子衛星與段落。"""
 
     __tablename__ = "satellites"
 

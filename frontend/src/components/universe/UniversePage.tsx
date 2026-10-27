@@ -12,6 +12,7 @@ import { usePrefersReducedMotion, useWebGLSupport } from '@/lib/hooks'
 import type { Satellite, SubSatellite } from '@/lib/types'
 import { createRegistry } from '@/scenes/universe/registry'
 
+import { MePlanetModal } from './MePlanetModal'
 import { ParagraphModal } from './ParagraphModal'
 import { SatelliteDrawer } from './SatelliteDrawer'
 import styles from './universe.module.css'
@@ -20,7 +21,7 @@ import { WebGLFallback } from './WebGLFallback'
 // WebGL 只在瀏覽器執行
 const UniverseScene = dynamic(() => import('@/scenes/universe/UniverseScene'), { ssr: false })
 
-/** 前台首頁（瀏覽3D宇宙 → 探索衛星 → 查看段落） */
+/** 前台首頁（瀏覽3D宇宙 → 查看ME星球／探索衛星 → 查看段落） */
 export function UniversePage() {
   const toast = useToast()
   const webgl = useWebGLSupport()
@@ -33,6 +34,7 @@ export function UniversePage() {
   const [focusedId, setFocusedId] = useState<number | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [openSub, setOpenSub] = useState<SubSatellite | null>(null)
+  const [mePlanetOpen, setMePlanetOpen] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -101,6 +103,7 @@ export function UniversePage() {
             registry={registry}
             onSelectSatellite={focusSatellite}
             onSelectSubSatellite={setOpenSub}
+            onSelectMePlanet={() => setMePlanetOpen(true)}
           />
           <svg className={styles.leaders} aria-hidden="true" ref={(el) => void (registry.leaders = el)} />
           <div className={styles.sceneLabels}>
@@ -112,7 +115,9 @@ export function UniversePage() {
               </div>
             ))}
             <div className={styles.meLabel} ref={(el) => void (registry.meLabel = el)}>
-              <strong>ME</strong>
+              <button className={styles.meName} onClick={() => setMePlanetOpen(true)} aria-label="查看 ME Planet 內容">
+                <strong>ME</strong>
+              </button>
               <span>
                 一位終身學習者
                 <br />
@@ -200,6 +205,8 @@ export function UniversePage() {
         satelliteIndex={openSub ? satellites.findIndex((s) => s.id === openSub.satellite_id) : 0}
         onClose={() => setOpenSub(null)}
       />
+
+      <MePlanetModal open={mePlanetOpen} onClose={() => setMePlanetOpen(false)} />
     </main>
   )
 }

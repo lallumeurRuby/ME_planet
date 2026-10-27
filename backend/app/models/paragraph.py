@@ -13,7 +13,7 @@ class Paragraph(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     sub_satellite_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("sub_satellites.id", ondelete="RESTRICT"), nullable=False
+        Integer, ForeignKey("sub_satellites.id", ondelete="CASCADE"), nullable=False
     )
     title: Mapped[str] = mapped_column(String(100), nullable=False)
     summary: Mapped[str | None] = mapped_column(Text, nullable=True)

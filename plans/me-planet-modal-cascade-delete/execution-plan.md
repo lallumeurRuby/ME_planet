@@ -100,6 +100,11 @@
 | 05 | models/sub_satellite、models/paragraph + migrations/ | FIELD_CHANGE | Phase 02 | FK ondelete RESTRICT → CASCADE |
 | 05 | services/satellite_service、sub_satellite_service | FIELD_CHANGE | Phase 02 | 移除 HAS_CHILDREN 檢查，依 FK cascade 刪除 |
 | 05 | models/me_planet_content + migrations/ | NEW_OPERATION | Phase 02 | 新表：id, content(text null), updated_at |
+| 05 | steps/me_planet（新）| NEW_OPERATION | Phase 03 | 新句型：`Given ME星球內容為：`、`When 擁有者編輯ME星球內容：`、`Then ME星球內容應為：`（含恰一筆斷言） |
+| 05 | steps/universe | NEW_OPERATION | Phase 03 | 新句型：`When 查詢ME星球內容`、`Then 查詢結果應為：`（單一物件） |
+| 05 | 刪除衛星／刪除子衛星 cascade Examples | — | Phase 03 | 沿用既有句型；目前後端回 409 → 紅燈，由 Phase 05 修正 |
+| 05+06 | DELETE /satellites/{id}、/sub-satellites/{id} | ENDPOINT_SCHEMA | Phase 04 | −409 HasChildren；Error.code −HAS_CHILDREN（後端 error 定義、前端 errors.ts / error.schema.ts / MSW handlers / AdminPage 錯誤處理） |
+| 05+06 | GET /me-planet、PUT /me-planet | NEW_OPERATION | Phase 04 | 後端 router + 前端 API client / zod schema / MSW handler / Modal / 後台編輯區 |
 
 ---
 

@@ -2,7 +2,6 @@ from sqlalchemy.orm import Session
 
 from app.exceptions import AppError
 from app.models.sub_satellite import SubSatellite
-from app.repositories.paragraph_repository import ParagraphRepository
 from app.repositories.satellite_repository import SatelliteRepository
 from app.repositories.sub_satellite_repository import SubSatelliteRepository
 
@@ -13,7 +12,6 @@ class SubSatelliteService:
     def __init__(self, session: Session):
         self.repository = SubSatelliteRepository(session)
         self.satellite_repository = SatelliteRepository(session)
-        self.paragraph_repository = ParagraphRepository(session)
 
     def list_by_satellite(self, satellite_id: int) -> list[SubSatellite]:
         self._ensure_satellite_exists(satellite_id)
@@ -34,8 +32,6 @@ class SubSatelliteService:
 
     def delete(self, sub_satellite_id: int) -> None:
         sub_satellite = self._get_or_404(sub_satellite_id)
-        if self.paragraph_repository.exists_in_sub_satellite(sub_satellite.id):
-            raise AppError(409, "HAS_CHILDREN", "子衛星底下仍有段落，無法刪除")
         self.repository.delete(sub_satellite)
 
     def _ensure_satellite_exists(self, satellite_id: int) -> None:

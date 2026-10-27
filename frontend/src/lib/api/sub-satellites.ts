@@ -20,7 +20,7 @@ export function updateSubSatellite(subSatelliteId: number, body: SubSatelliteInp
   return apiClient<SubSatellite>(`/sub-satellites/${subSatelliteId}`, { method: 'PUT', body: JSON.stringify(body) })
 }
 
-/** DELETE /sub-satellites/{subSatelliteId}（operationId: deleteSubSatellite）— 底下仍有段落時 409 HAS_CHILDREN */
+/** DELETE /sub-satellites/{subSatelliteId}（operationId: deleteSubSatellite）— 連帶刪除其段落 */
 export function deleteSubSatellite(subSatelliteId: number): Promise<void> {
   return apiClient<void>(`/sub-satellites/${subSatelliteId}`, { method: 'DELETE' })
 }

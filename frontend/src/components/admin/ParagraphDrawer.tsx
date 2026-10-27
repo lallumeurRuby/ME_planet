@@ -17,7 +17,7 @@ export interface ParagraphFormValues {
   content: string
 }
 
-const TOOLBAR = [
+export const RICH_TEXT_TOOLBAR = [
   { cmd: 'bold', label: '粗體', icon: <b>B</b> },
   { cmd: 'italic', label: '斜體', icon: <i>I</i> },
   { cmd: 'insertUnorderedList', label: '項目清單', icon: '•' },
@@ -131,7 +131,7 @@ export function ParagraphDrawer({
             <span className="label">內容</span>
             <div className={styles.editor}>
               <div className={styles.toolbar} role="toolbar" aria-label="格式">
-                {TOOLBAR.map((tool) => (
+                {RICH_TEXT_TOOLBAR.map((tool) => (
                   <button
                     key={tool.cmd}
                     type="button"

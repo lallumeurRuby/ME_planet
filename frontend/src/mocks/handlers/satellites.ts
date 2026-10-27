@@ -40,14 +40,17 @@ export const satelliteHandlers = [
     return HttpResponse.json(satellite)
   }),
 
-  // DELETE /satellites/:satelliteId（底下須無子衛星）
+  // DELETE /satellites/:satelliteId（連帶刪除其子衛星與段落）
   http.delete(`${API}/satellites/:satelliteId`, ({ request, params }) => {
     const unauthorized = requireOwner(request)
     if (unauthorized) return unauthorized
     const satellite = findSatellite(params.satelliteId)
     if (!satellite) return errorResponse(404, 'NOT_FOUND', `找不到衛星 ${params.satelliteId}`)
-    if (db.subSatellites.some((u) => u.satellite_id === satellite.id))
-      return errorResponse(409, 'HAS_CHILDREN', '衛星底下仍有子衛星，無法刪除')
+    const subSatelliteIds = new Set(
+      db.subSatellites.filter((u) => u.satellite_id === satellite.id).map((u) => u.id)
+    )
+    db.paragraphs = db.paragraphs.filter((p) => !subSatelliteIds.has(p.sub_satellite_id))
+    db.subSatellites = db.subSatellites.filter((u) => u.satellite_id !== satellite.id)
     db.satellites = db.satellites.filter((s) => s.id !== satellite.id)
     return new HttpResponse(null, { status: 204 })
   }),

@@ -1,4 +1,4 @@
-from sqlalchemy import exists, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.paragraph import Paragraph
@@ -18,13 +18,6 @@ class ParagraphRepository:
 
     def find_by_title(self, title: str) -> list[Paragraph]:
         return list(self.session.scalars(select(Paragraph).where(Paragraph.title == title)))
-
-    def exists_in_sub_satellite(self, sub_satellite_id: int) -> bool:
-        return bool(
-            self.session.scalar(
-                select(exists().where(Paragraph.sub_satellite_id == sub_satellite_id))
-            )
-        )
 
     def delete(self, paragraph: Paragraph) -> None:
         self.session.delete(paragraph)

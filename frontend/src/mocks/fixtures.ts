@@ -1,10 +1,11 @@
-import type { Paragraph, Satellite, SubSatellite } from '@/lib/types'
+import type { MePlanetContent, Paragraph, Satellite, SubSatellite } from '@/lib/types'
 
 /*
  * 固定資料：全部取自 backend/tests/features 的 Given 步驟。
  *   衛星／子衛星：探索衛星.feature、刪除衛星.feature、編輯子衛星.feature
  *   段落：查看段落.feature、刪除段落.feature
  *   擁有者密碼：進入後台.feature
+ *   ME Planet 內容：查看ME星球.feature
  */
 
 export const MOCK_OWNER_PASSWORD = 'Orbit#2026'
@@ -39,3 +40,8 @@ export const mockParagraphs: Paragraph[] = [
   paragraph(104, 11, '太陽系簡介', null, '<p>太陽系有八大行星。</p>', '2026-03-02T12:00:00+00:00'),
   paragraph(105, 12, '火星筆記', '紅色星球', '<p>火星有兩顆衛星。</p>', '2026-03-04T00:00:00+00:00'),
 ]
+
+export const mockMePlanetContent: MePlanetContent = {
+  content: '<p>我是 Ruby，喜歡天文與程式設計。</p>',
+  updated_at: '2026-03-01T00:00:00+00:00',
+}

@@ -6,6 +6,7 @@ info:
     ME Planet 知識衛星宇宙。讀取 API 公開；寫入 API 需 Bearer JWT（有效期 24 小時）。
     成功回應直接回傳資源或陣列（無 envelope）；錯誤回應統一為 Error `{ code, message }`。
     所有欄位驗證錯誤一律回 400（不使用 422）。
+    ME Planet 內容為單筆資源（/me-planet，無 id）。
 
 servers:
   - url: http://localhost:8000/api
@@ -100,14 +101,13 @@ paths:
         '409': { $ref: '#/components/responses/NameDuplicated' }
     delete:
       operationId: deleteSatellite
-      summary: 刪除衛星（底下須無子衛星）
+      summary: 刪除衛星（連帶刪除其子衛星與段落）
       tags: [satellite]
       security: [{ bearerAuth: [] }]
       responses:
         '204': { description: 刪除成功 }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
-        '409': { $ref: '#/components/responses/HasChildren' }
 
   /satellites/{satelliteId}/sub-satellites:
     parameters:
@@ -172,14 +172,13 @@ paths:
         '409': { $ref: '#/components/responses/NameDuplicated' }
     delete:
       operationId: deleteSubSatellite
-      summary: 刪除子衛星（底下須無段落）
+      summary: 刪除子衛星（連帶刪除其段落）
       tags: [sub-satellite]
       security: [{ bearerAuth: [] }]
       responses:
         '204': { description: 刪除成功 }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
-        '409': { $ref: '#/components/responses/HasChildren' }
 
   /sub-satellites/{subSatelliteId}/paragraphs:
     parameters:
@@ -250,6 +249,36 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+  /me-planet:
+    get:
+      operationId: getMePlanetContent
+      summary: 查看 ME Planet 內容（單筆；從未設定時 content、updated_at 為 null）
+      tags: [me-planet]
+      security: []
+      responses:
+        '200':
+          description: ME Planet 內容；從未設定時回 200 + null（不回 404）
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MePlanetContent' }
+    put:
+      operationId: updateMePlanetContent
+      summary: 編輯 ME Planet 內容（upsert：從未設定時建立；整份覆蓋；updated_at 更新）
+      tags: [me-planet]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MePlanetContentInput' }
+      responses:
+        '200':
+          description: 編輯成功（首次建立亦回 200）
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MePlanetContent' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
 components:
   securitySchemes:
     bearerAuth:
@@ -296,11 +325,6 @@ components:
       content:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
-    HasChildren:
-      description: 底下仍有子資料，拒絕刪除（HAS_CHILDREN）
-      content:
-        application/json:
-          schema: { $ref: '#/components/schemas/Error' }
 
   schemas:
     Error:
@@ -317,7 +341,6 @@ components:
             - FIELD_TOO_LONG
             - NOT_FOUND
             - NAME_DUPLICATED
-            - HAS_CHILDREN
         message:
           type: string
           description: 人類可讀的中文訊息，BDD 不驗證其文字
@@ -401,3 +424,16 @@ components:
         title: { type: string, maxLength: 100 }
         summary: { type: string, nullable: true, description: 送 null 即清空 }
         content: { type: string }
+
+    MePlanetContent:
+      type: object
+      required: [content, updated_at]
+      properties:
+        content: { type: string, nullable: true, description: Rich text（HTML 字串，原樣儲存）；從未設定或已清空時為 null }
+        updated_at: { type: string, format: date-time, nullable: true, description: 從未設定時為 null }
+
+    MePlanetContentInput:
+      type: object
+      description: 整份覆蓋；無標題
+      properties:
+        content: { type: string, nullable: true, description: 選填；""、null 或省略一律存為 null（清空） }

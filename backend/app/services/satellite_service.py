@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 from app.exceptions import AppError
 from app.models.satellite import Satellite
 from app.repositories.satellite_repository import SatelliteRepository
-from app.repositories.sub_satellite_repository import SubSatelliteRepository
 
 NAME_MAX_LENGTH = 50
 
@@ -11,7 +10,6 @@ NAME_MAX_LENGTH = 50
 class SatelliteService:
     def __init__(self, session: Session):
         self.repository = SatelliteRepository(session)
-        self.sub_satellite_repository = SubSatelliteRepository(session)
 
     def list_all(self) -> list[Satellite]:
         return self.repository.find_all_oldest_first()
@@ -30,8 +28,6 @@ class SatelliteService:
 
     def delete(self, satellite_id: int) -> None:
         satellite = self._get_or_404(satellite_id)
-        if self.sub_satellite_repository.exists_in_satellite(satellite.id):
-            raise AppError(409, "HAS_CHILDREN", "衛星底下仍有子衛星，無法刪除")
         self.repository.delete(satellite)
 
     def _get_or_404(self, satellite_id: int) -> Satellite:

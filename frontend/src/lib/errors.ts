@@ -10,7 +10,6 @@ const MESSAGES: Record<ErrorCode, string> = {
   FIELD_TOO_LONG: '超過字數上限',
   NOT_FOUND: '找不到這筆資料，可能已被刪除',
   NAME_DUPLICATED: '名稱已存在',
-  HAS_CHILDREN: '底下還有資料，請先刪除它們',
 }
 
 export const errorCodeOf = (error: unknown): string | null =>

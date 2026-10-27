@@ -1,4 +1,4 @@
-from sqlalchemy import exists, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.sub_satellite import SubSatellite
@@ -18,11 +18,6 @@ class SubSatelliteRepository:
 
     def find_by_name(self, name: str) -> list[SubSatellite]:
         return list(self.session.scalars(select(SubSatellite).where(SubSatellite.name == name)))
-
-    def exists_in_satellite(self, satellite_id: int) -> bool:
-        return bool(
-            self.session.scalar(select(exists().where(SubSatellite.satellite_id == satellite_id)))
-        )
 
     def find_by_satellite_and_name(self, satellite_id: int, name: str) -> SubSatellite | None:
         return self.session.scalars(

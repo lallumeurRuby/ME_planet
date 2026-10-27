@@ -34,6 +34,12 @@ type PendingDelete =
   | { kind: 'paragraph'; item: Paragraph }
 
 const DELETE_LABEL = { satellite: '衛星', subSatellite: '子衛星', paragraph: '段落' } as const
+/** 刪除確認對話框的固定警告文字：衛星／子衛星連帶刪除下層 */
+const DELETE_WARNING = {
+  satellite: '底下所有子衛星與段落將一併刪除，無法復原。',
+  subSatellite: '底下所有段落將一併刪除，無法復原。',
+  paragraph: '刪除後無法復原。',
+} as const
 
 /** 後台管理：衛星 → 子衛星 → 段落 三欄下鑽 CRUD */
 export function AdminPage() {
@@ -112,10 +118,7 @@ export function AdminPage() {
       if (kind === 'paragraph') await loadParagraphs(subs)
       else await loadSatellites()
     } catch (error) {
-      if (errorCodeOf(error) === 'HAS_CHILDREN') {
-        const children = kind === 'satellite' ? '子衛星' : '段落'
-        toast(`「${name}」底下還有${children}，請先刪除它們`, { error: true })
-      } else handleError(error)
+      handleError(error)
     }
   }
 
@@ -218,7 +221,7 @@ export function AdminPage() {
             ? `刪除${DELETE_LABEL[pendingDelete.kind]}「${'name' in pendingDelete.item ? pendingDelete.item.name : pendingDelete.item.title}」？`
             : ''
         }
-        message="刪除後無法復原。"
+        message={pendingDelete ? DELETE_WARNING[pendingDelete.kind] : ''}
         onConfirm={confirmDelete}
         onCancel={() => setPendingDelete(null)}
       />

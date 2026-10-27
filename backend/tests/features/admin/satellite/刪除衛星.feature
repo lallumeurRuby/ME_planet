@@ -37,7 +37,19 @@ Feature: 刪除衛星
   Rule: 後置（狀態）- 衛星底下仍有 SubSatellite 時也可刪除，所屬 SubSatellite 與其 Paragraph 一併刪除
     # 原文：「不需要下層內容為空才能刪除，只要確認彈窗按下確認即可刪除」（取代原「前置（護欄）」409 HAS_CHILDREN）
     # 澄清 2026-10-27 Q2：一併刪除（cascade）
-    # Example 待 Phase 03 BDD Analysis 補齊
+
+    Example: 刪除有子衛星的衛星後，其子衛星與段落一併消失
+      Given 系統中有以下段落：
+        | sub_satellite_id | title      | content                        | created_at       |
+        | $星系.id         | 銀河系簡介 | <p>銀河系是一個棒旋星系。</p> | 2026-03-01 00:00 |
+      When 擁有者刪除衛星 "$天文.id"
+      Then 操作成功
+      And 系統中不應有衛星 "天文"
+      And 系統中不應有子衛星 "星系"
+      And 系統中不應有段落 "銀河系簡介"
+      And 系統中應有以下衛星：
+        | name     |
+        | 程式設計 |
 
   Rule: 後置（錯誤）- 目標 Satellite 不存在時回傳 404 Not Found
 

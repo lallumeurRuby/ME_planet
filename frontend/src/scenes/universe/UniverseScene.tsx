@@ -19,6 +19,7 @@ export interface UniverseSceneProps {
   registry: SceneRegistry
   onSelectSatellite: (satelliteId: number) => void
   onSelectSubSatellite: (sub: SubSatellite) => void
+  onSelectMePlanet: () => void
   className?: string
 }
 
@@ -31,6 +32,7 @@ export default function UniverseScene({
   registry,
   onSelectSatellite,
   onSelectSubSatellite,
+  onSelectMePlanet,
   className,
 }: UniverseSceneProps) {
   const spin = reducedMotion ? 0 : 1
@@ -38,7 +40,7 @@ export default function UniverseScene({
     <Canvas3D className={className} shadows={false} camera={{ fov: 28, near: 0.1, far: 600, position: [0, 13, 36] }}>
       <SceneLighting />
       <Starfield spin={spin} />
-      <MePlanet spin={spin} />
+      <MePlanet spin={spin} onSelect={onSelectMePlanet} />
       <GoldRing spin={spin} />
       <OrbitPaths />
       {satellites.map((satellite, index) => (
