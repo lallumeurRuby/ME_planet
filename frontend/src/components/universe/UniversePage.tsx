@@ -5,9 +5,7 @@ import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { Logo } from '@/components/ui/Logo'
-import { useToast } from '@/components/ui/Toast'
-import { listSatellites, listSubSatellites } from '@/lib/api'
-import { errorMessageOf } from '@/lib/errors'
+import { listSatellites, listSubSatellites } from '@/lib/content'
 import { usePrefersReducedMotion, useWebGLSupport } from '@/lib/hooks'
 import type { Satellite, SubSatellite } from '@/lib/types'
 import { createRegistry } from '@/scenes/universe/registry'
@@ -21,42 +19,22 @@ import { WebGLFallback } from './WebGLFallback'
 // WebGL 只在瀏覽器執行
 const UniverseScene = dynamic(() => import('@/scenes/universe/UniverseScene'), { ssr: false })
 
+// 靜態內容：模組載入時即可取得，不需非同步載入
+const satellites: Satellite[] = listSatellites()
+const subsBySatellite: Record<number, SubSatellite[]> = Object.fromEntries(
+  satellites.map((s) => [s.id, listSubSatellites(s.id)])
+)
+
 /** 前台首頁（瀏覽3D宇宙 → 查看ME星球／探索衛星 → 查看段落） */
 export function UniversePage() {
-  const toast = useToast()
   const webgl = useWebGLSupport()
   const reducedMotion = usePrefersReducedMotion()
   const registry = useMemo(createRegistry, [])
 
-  const [satellites, setSatellites] = useState<Satellite[]>([])
-  const [subsBySatellite, setSubsBySatellite] = useState<Record<number, SubSatellite[]>>({})
-  const [loadError, setLoadError] = useState<string | null>(null)
   const [focusedId, setFocusedId] = useState<number | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [openSub, setOpenSub] = useState<SubSatellite | null>(null)
   const [mePlanetOpen, setMePlanetOpen] = useState(false)
-
-  useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      try {
-        const list = await listSatellites()
-        const subs = await Promise.all(list.map((s) => listSubSatellites(s.id)))
-        if (cancelled) return
-        setSatellites(list)
-        setSubsBySatellite(Object.fromEntries(list.map((s, i) => [s.id, subs[i]])))
-      } catch (error) {
-        if (!cancelled) setLoadError(errorMessageOf(error))
-      }
-    })()
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  useEffect(() => {
-    if (loadError) toast(`載入宇宙失敗：${loadError}`, { error: true })
-  }, [loadError, toast])
 
   const focused = satellites.find((s) => s.id === focusedId) ?? null
 
@@ -142,9 +120,6 @@ export function UniversePage() {
         <span className={styles.spacer} />
         <Link className={styles.navLink} href="/" aria-current="page">
           宇宙
-        </Link>
-        <Link className={`btn ${styles.pillCta}`} href="/admin">
-          後台 <span className={styles.ctaDot} />
         </Link>
       </header>
 

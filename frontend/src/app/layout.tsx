@@ -2,8 +2,6 @@ import type { Metadata } from 'next'
 import { Cormorant_Garamond, Noto_Sans_TC, Noto_Serif_TC } from 'next/font/google'
 
 import './globals.css'
-import { MSWProvider } from '@/components/MSWProvider'
-import { ToastProvider } from '@/components/ui/Toast'
 
 const cormorant = Cormorant_Garamond({
   subsets: ['latin'],
@@ -23,11 +21,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="zh-TW" className={`${cormorant.variable} ${notoSerif.variable} ${notoSans.variable}`}>
-      <body>
-        <MSWProvider>
-          <ToastProvider>{children}</ToastProvider>
-        </MSWProvider>
-      </body>
+      <body>{children}</body>
     </html>
   )
 }

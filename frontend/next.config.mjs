@@ -1,15 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
-  async rewrites() {
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000'
-    return [
-      {
-        source: '/api/:path*',
-        destination: `${backendUrl}/api/:path*`,
-      },
-    ]
-  },
+  // 純靜態網站：next build 產出 out/，內容來自 src/data/content.ts
+  output: 'export',
 };
 
 export default nextConfig;

@@ -133,17 +133,6 @@
   color: var(--text);
   border-color: var(--text);
 }
-.pillCta {
-  padding: 10px 20px;
-}
-.ctaDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 0 10px #fff;
-}
-
 /* ── Hero ── */
 .hero {
   position: absolute;
