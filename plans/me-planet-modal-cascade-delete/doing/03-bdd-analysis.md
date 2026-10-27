@@ -46,9 +46,9 @@ carry-on Step 03.2 觸發時：
 
 | # | 交付物 | 路徑 | 狀態 |
 |---|--------|------|------|
-| 03.1 | 系統抽象 | `C:/Users/retailingdata/Desktop/ruby/ME_planet/specs/features/系統抽象.md` | PENDING |
-| 03.2 | 句型模型 | `C:/Users/retailingdata/Desktop/ruby/ME_planet/specs/features/{domain}/句型.md` | PENDING |
-| 03.3 | Feature Files（含 Examples） | `C:/Users/retailingdata/Desktop/ruby/ME_planet/specs/features/**/*.feature` | PENDING |
+| 03.1 | 系統抽象 | `C:/Users/retailingdata/Desktop/ruby/ME_planet/backend/tests/features/系統抽象.md` | PENDING |
+| 03.2 | 句型模型 | `C:/Users/retailingdata/Desktop/ruby/ME_planet/backend/tests/features/{domain}/句型.md` | PENDING |
+| 03.3 | Feature Files（含 Examples） | `C:/Users/retailingdata/Desktop/ruby/ME_planet/backend/tests/features/**/*.feature` | PENDING |
 
 ### 驗收點
 
