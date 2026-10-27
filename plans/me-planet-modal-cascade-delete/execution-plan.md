@@ -93,6 +93,16 @@
 
 ---
 
+## IMPL_IMPACT（由 Phase 02-04 Reconciler 回填）
+
+| Phase | 影響目標 | Impact Type | 來源 | 說明 |
+|-------|---------|-------------|------|------|
+| 05 | models/sub_satellite、models/paragraph + migrations/ | FIELD_CHANGE | Phase 02 | FK ondelete RESTRICT → CASCADE |
+| 05 | services/satellite_service、sub_satellite_service | FIELD_CHANGE | Phase 02 | 移除 HAS_CHILDREN 檢查，依 FK cascade 刪除 |
+| 05 | models/me_planet_content + migrations/ | NEW_OPERATION | Phase 02 | 新表：id, content(text null), updated_at |
+
+---
+
 ## Phase 07: Integration
 
 | 操作 | 目標 | 說明 |
