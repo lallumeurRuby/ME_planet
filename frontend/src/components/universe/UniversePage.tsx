@@ -94,12 +94,12 @@ export function UniversePage() {
             ))}
             <div className={styles.meLabel} ref={(el) => void (registry.meLabel = el)}>
               <button className={styles.meName} onClick={() => setMePlanetOpen(true)} aria-label="查看 ME Planet 內容">
-                <strong>ME</strong>
+                <strong>Ruby Oz</strong>
               </button>
               <span>
-                一位終身學習者
+                兼具技術思維與設計美感，
                 <br />
-                每天長出一點新的知識
+                持續探索產品的體驗和可能。
               </span>
             </div>
             {focused &&
@@ -124,16 +124,16 @@ export function UniversePage() {
       </header>
 
       <section ref={heroRef} className={`${styles.hero} ${focused ? styles.heroHidden : ''}`}>
-        <div className="eyebrow">My Knowledge Universe</div>
+        <div className="eyebrow">Engineering × Design × Product</div>
         <h1>
-          好奇心，
+          不被角色定義，
           <br />
-          <em>持續</em>公轉中。
+          <em>持續探索更多可能。</em>
         </h1>
         <p>
           在不同的知識領域中持續探索、連結與累積，
           <br />
-          讓學習成為推動我前進的引力。
+          是推動我前進的引力。
         </p>
         <button className={`btn ${styles.exploreBtn}`} onClick={() => setDrawerOpen(true)}>
           探索我的宇宙 <span aria-hidden="true">→</span>

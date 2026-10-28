@@ -7,7 +7,7 @@ export function Logo({ href = '/' }: { href?: string }) {
         <circle cx="16" cy="16" r="7" fill="#dbe6ff" />
         <ellipse cx="16" cy="16" rx="14" ry="4.5" transform="rotate(-24 16 16)" stroke="#dbe6ff" strokeWidth="1.6" />
       </svg>
-      ME PLANET
+      Ruby Oz
     </Link>
   )
 }

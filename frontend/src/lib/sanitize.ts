@@ -21,3 +21,20 @@ export function sanitizeRichText(html: string): string {
   walk(root)
   return root.innerHTML
 }
+
+/**
+ * 把已淨化的 HTML 拆成「開頭」與「其餘」兩段：
+ * 開頭 = 第一個 <h3> 區塊（到第二個 <h3> 之前）；沒有兩個以上 <h3> 時，取到第一個 <p> 為止
+ */
+export function splitLead(html: string): [lead: string, rest: string] {
+  if (typeof window === 'undefined' || !html) return [html, '']
+  const doc = new DOMParser().parseFromString(`<div>${html}</div>`, 'text/html')
+  const blocks = Array.from((doc.body.firstElementChild as HTMLElement).childNodes)
+  const headings = blocks.flatMap((node, i) => (node.nodeName === 'H3' ? [i] : []))
+  const firstP = blocks.findIndex((node) => node.nodeName === 'P')
+  const end = headings.length >= 2 ? headings[1] : firstP + 1
+  if (end <= 0) return [html, '']
+  const toHtml = (nodes: ChildNode[]) =>
+    nodes.map((node) => (node instanceof Element ? node.outerHTML : node.textContent ?? '')).join('')
+  return [toHtml(blocks.slice(0, end)).trim(), toHtml(blocks.slice(end)).trim()]
+}

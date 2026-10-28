@@ -163,7 +163,8 @@
   margin: 18px 0;
   font-family: var(--font-title);
   font-weight: 600;
-  font-size: clamp(34px, 4.2vw, 58px);
+  /* 最長一行（持續探索更多可能。9 字）需落在 hero 寬度 min(440px, 36vw) 內，才不會壓到 3D 場景 */
+  font-size: clamp(26px, 3vw, 42px);
   line-height: 1.18;
   letter-spacing: 0.01em;
 }
@@ -360,6 +361,164 @@
 .modalBody {
   overflow: auto;
   padding: 6px 26px 26px;
+}
+/* ── ME Planet Modal：第一排照片＋開頭文字，第二排全寬文字 ── */
+.meDialog {
+  width: min(780px, calc(100vw - 32px));
+}
+.meIntro {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  gap: 26px;
+  align-items: center;
+  padding: 20px 0 22px;
+}
+.meLead {
+  align-self: center;
+  font-size: 15px;
+  color: var(--text);
+  animation: rise 0.6s 0.1s var(--ease-out) both;
+}
+/* 區塊標題（關於我／工作經歷／學歷）：小型大寫字距＋漸層細線 */
+.meLead h3,
+.meRest h3 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--accent-text);
+}
+.meLead h3::after,
+.meRest h3::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--line-strong), transparent);
+}
+.meRest h3:not(:first-child) {
+  margin-top: 30px;
+}
+/* 經歷時間軸：每個 <div> 為一筆，左側細線＋光點 */
+.meRest > div {
+  position: relative;
+  padding: 0 0 18px 22px;
+  border-left: 1px solid var(--line);
+  margin-left: 5px;
+}
+.meRest > div:has(+ h3),
+.meRest > div:last-child {
+  border-left-color: transparent;
+  padding-bottom: 0;
+}
+.meRest > div::before {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: 7px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #cfe3ff, #5b9bff 70%);
+  box-shadow: 0 0 10px 1px rgba(91, 155, 255, 0.55);
+}
+.meRest > div > p {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 10px;
+  margin-bottom: 4px;
+  line-height: 1.6;
+}
+.meRest > div > p strong {
+  font-family: var(--font-title);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text);
+}
+.meRest > div > p span {
+  font-size: 13.5px;
+  color: var(--lavender);
+}
+.meRest > div > p em {
+  margin-left: auto;
+  font-style: normal;
+  font-size: 12.5px;
+  letter-spacing: 0.05em;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+.meRest ul {
+  margin: 0 0 0 1.1em;
+  line-height: 1.75;
+  font-size: 14.5px;
+}
+.meRest li::marker {
+  color: var(--text-faint);
+}
+.meLead > :last-child,
+.meRest > :last-child {
+  margin-bottom: 0;
+}
+.meIntro .emptyState {
+  padding: 20px 0;
+}
+.meRest {
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  animation: rise 0.6s 0.2s var(--ease-out) both;
+}
+@media (max-width: 560px) {
+  .meIntro {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .mePhoto {
+    width: 180px;
+  }
+}
+/* 個人照：直幅裁切，邊緣暗角融入 Modal 深色背景 */
+.mePhoto {
+  position: relative;
+  margin: 0;
+  aspect-ratio: 4 / 5;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  box-shadow: 0 18px 40px -22px rgba(91, 155, 255, 0.55);
+  animation: rise 0.6s var(--ease-out) both;
+}
+.mePhoto img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 55% 30%;
+  filter: saturate(0.9) contrast(1.03);
+  transform: scale(1.02);
+  transition: transform 0.8s var(--ease-out), filter 0.8s var(--ease-out);
+}
+.mePhoto:hover img {
+  transform: scale(1.05);
+  filter: saturate(1) contrast(1.05);
+}
+.mePhoto::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, transparent 70%, rgba(12, 21, 56, 0.5) 100%),
+    radial-gradient(110% 90% at 50% 35%, transparent 55%, rgba(12, 21, 56, 0.5) 100%);
+}
+@media (prefers-reduced-motion: reduce) {
+  .mePhoto,
+  .mePhoto img {
+    animation: none;
+    transition: none;
+  }
 }
 .modalStatus {
   padding: 40px 0;
