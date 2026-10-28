@@ -11,7 +11,7 @@ import styles from './universe.module.css'
 /** 查看ME星球：點擊 ME Planet 後以 Modal 呈現靜態內容（內容留空時顯示空狀態） */
 export function MePlanetModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { content } = getMePlanetContent()
-  // 第一排：照片（左）＋開頭段落（右）；第二排：其餘內容全寬
+  // 第一排：照片（左）＋開頭段落（右）；第二排：其餘內容佔滿寬度
   // 只在開啟時才解析 HTML（關閉時 UniversePage 每次 re-render 都不必重算）
   const [lead, rest] = useMemo(
     () => (open && content ? splitLead(sanitizeRichText(content)) : ['', '']),
