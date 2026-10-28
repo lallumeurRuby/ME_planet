@@ -20,6 +20,12 @@ export interface Paragraph {
   content: string
   /** YYYY-MM-DD，僅用於顯示 */
   created_at: string
+  /** 選填：public/ 下的圖片路徑（如 /images/xxx.png）；有圖片時段落以「左圖右文」兩欄呈現 */
+  image?: string
+  /** 選填：外部連結；有值時標題可點擊，於新分頁開啟 */
+  link?: string
+  /** 選填：標籤（如技術棧），顯示於內容下方 */
+  tags?: string[]
 }
 
 export interface MePlanetContent {

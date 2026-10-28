@@ -119,7 +119,7 @@ export function UniversePage() {
         <Logo />
         <span className={styles.spacer} />
         <Link className={styles.navLink} href="/" aria-current="page">
-          宇宙
+          我的知識宇宙
         </Link>
       </header>
 

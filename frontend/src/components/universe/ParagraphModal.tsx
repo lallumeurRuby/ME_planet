@@ -22,9 +22,16 @@ export function ParagraphModal({
   onClose: () => void
 }) {
   const paragraphs = subSatellite ? listParagraphs(subSatellite.id) : []
+  // 有圖片的段落需要兩欄空間，Modal 加寬
+  const hasImage = paragraphs.some((p) => p.image)
 
   return (
-    <Dialog open={!!subSatellite} onClose={onClose} labelledBy="paragraph-modal-title" className={styles.paragraphDialog}>
+    <Dialog
+      open={!!subSatellite}
+      onClose={onClose}
+      labelledBy="paragraph-modal-title"
+      className={`${styles.paragraphDialog} ${hasImage ? styles.wideDialog : ''}`}
+    >
       <div className={styles.modalHead}>
         <span className={styles.modalPlanet} style={{ background: paletteAt(satelliteIndex).css }} />
         <div>
@@ -46,13 +53,42 @@ export function ParagraphModal({
           </div>
         )}
         {paragraphs.map((paragraph, i) => (
-          <article key={paragraph.id} className={styles.paragraphItem} style={{ animationDelay: `${i * 70}ms` }}>
-            <header>
-              <h4>{paragraph.title}</h4>
-              <time dateTime={paragraph.created_at}>{formatDate(paragraph.created_at)}</time>
-            </header>
-            {paragraph.summary && <p className={styles.summary}>{paragraph.summary}</p>}
-            <div className={`rich-text ${styles.content}`} dangerouslySetInnerHTML={{ __html: sanitizeRichText(paragraph.content) }} />
+          <article
+            key={paragraph.id}
+            className={`${styles.paragraphItem} ${paragraph.image ? styles.paragraphMedia : ''}`}
+            style={{ animationDelay: `${i * 70}ms` }}
+          >
+            {paragraph.image && (
+              <figure className={styles.paragraphImage}>
+                {/* 靜態輸出（output: 'export'）不支援 next/image 最佳化，直接使用 img */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={paragraph.image} alt={paragraph.title} loading="lazy" decoding="async" />
+              </figure>
+            )}
+            <div>
+              <header>
+                <h4>
+                  {paragraph.link ? (
+                    <a href={paragraph.link} target="_blank" rel="noopener noreferrer" className={styles.titleLink}>
+                      {paragraph.title}
+                      <span aria-hidden="true"> ↗</span>
+                    </a>
+                  ) : (
+                    paragraph.title
+                  )}
+                </h4>
+                <time dateTime={paragraph.created_at}>{formatDate(paragraph.created_at)}</time>
+              </header>
+              {paragraph.summary && <p className={styles.summary}>{paragraph.summary}</p>}
+              <div className={`rich-text ${styles.content}`} dangerouslySetInnerHTML={{ __html: sanitizeRichText(paragraph.content) }} />
+              {paragraph.tags && paragraph.tags.length > 0 && (
+                <ul className={styles.tags} aria-label="標籤">
+                  {paragraph.tags.map((tag) => (
+                    <li key={tag}>{tag}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </article>
         ))}
       </div>

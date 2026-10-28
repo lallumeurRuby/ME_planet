@@ -8,59 +8,67 @@ import type { MePlanetContent, Paragraph, Satellite, SubSatellite } from '@/lib/
  */
 
 export const satellites: Satellite[] = [
-  { id: 1, name: '天文' },
-  { id: 2, name: '程式設計' },
-  { id: 3, name: '音樂' },
+  { id: 1, name: '軟體開發' },
+  { id: 2, name: '產品管理' },
+  { id: 3, name: '閱讀書庫' },
 ]
 
+// 產品管理、閱讀書庫暫無子衛星
 export const subSatellites: SubSatellite[] = [
-  { id: 11, satellite_id: 1, name: '星系' },
-  { id: 12, satellite_id: 1, name: '行星' },
-  { id: 13, satellite_id: 1, name: '彗星' },
-  { id: 14, satellite_id: 1, name: '黑洞' },
-  { id: 21, satellite_id: 2, name: '演算法' },
+  { id: 11, satellite_id: 1, name: 'AIxBDD' },
+  { id: 12, satellite_id: 1, name: '工作專案' },
 ]
 
 export const paragraphs: Paragraph[] = [
-  {
-    id: 103,
-    sub_satellite_id: 11,
-    title: '仙女座星系',
-    summary: '距離最近的大星系',
-    content: '<p>仙女座星系是螺旋星系。</p>',
-    created_at: '2026-03-03',
-  },
-  {
-    id: 104,
-    sub_satellite_id: 11,
-    title: '太陽系簡介',
-    summary: null,
-    content: '<p>太陽系有八大行星。</p>',
-    created_at: '2026-03-02',
-  },
-  {
-    id: 102,
-    sub_satellite_id: 11,
-    title: '麥哲倫雲',
-    summary: null,
-    content: '<p>麥哲倫雲是矮星系。</p>',
-    created_at: '2026-03-02',
-  },
-  {
-    id: 101,
-    sub_satellite_id: 11,
-    title: '銀河系簡介',
-    summary: '我們所在的星系',
-    content: '<p>銀河系是一個棒旋星系。</p>',
-    created_at: '2026-03-01',
-  },
-  {
-    id: 105,
+    {
+    id: 1203,
     sub_satellite_id: 12,
-    title: '火星筆記',
-    summary: '紅色星球',
-    content: '<p>火星有兩顆衛星。</p>',
-    created_at: '2026-03-04',
+    title: 'GTB Space — 空間租賃與營運管理平台',
+    summary: '聚典資訊｜Space Rental · Operations Platform',
+    content: [
+      '<ul>',
+      '<li>與客戶端利害關係人合作，從前期需求探索、規格定義一路參與至開發交付，打造涵蓋預訂、付款與退款、會員制度、行銷、報表及內部營運流程的端到端空間租賃平台。</li>',
+      '<li>運用 <strong>Event Storming</strong> 與 <strong>Gherkin</strong>，將模糊且頻繁變動的商業需求轉化為結構化產品規則與可執行規格，釐清包含訂單修改／取消、付款與發票調整、會員升降級、優惠券資格與報表邏輯等複雜流程。</li>',
+      '<li>與後端工程師及 UI/UX 設計師跨職能協作，共同定義<strong>功能優先序、使用者流程、API／資料規格與介面行為</strong>，在技術可行性、營運需求與使用者體驗之間取得平衡。</li>',
+      '<li>協助設計具彈性的系統架構，將不同租賃政策與合作夥伴特有的商業規則整合至單一營運平台，將租賃全流程中必要的人工操作節點由約 <strong>9 個降低至 2–3 個</strong>。</li>',
+      '<li>參與前台官網的 <strong>SEO、前端效能優化與使用者流程改善</strong>，強化搜尋能見度、頁面反應速度與端到端預訂體驗。</li>',
+      '</ul>',
+    ].join(''),
+    created_at: '2025-09-10',
+    image: '/images/wp_gtb.jpg',
+    link: 'https://www.gtbspace.com/',
+  },
+  {
+    id: 1202,
+    sub_satellite_id: 12,
+    title: '高雄榮總 — AI 智慧照護平台',
+    summary: '聚典資訊｜HealthTech · AI Care Platform',
+    content: [
+      '<ul>',
+      '<li>參與 AI 智慧照護平台的產品規劃、流程設計、規格定義、前端開發與 AI 服務整合，涵蓋<strong>復健動作評估、營養辨識與多語照護溝通</strong>等功能。</li>',
+      '<li>與設計師、後端工程師及 AI 團隊協作，將臨床與營運流程轉化為瀏覽器端產品體驗，並完成前端應用與 AI 推論服務的整合。</li>',
+      '<li>協助系統部署至<strong>高雄榮總及旗下 14 間醫療機構</strong>，服務範圍涵蓋 <strong>500+</strong> 位長者。</li>',
+      '<li>透過流程數位化，協助第一線人員降低 <strong>30%</strong> 的行政與紀錄工時。</li>',
+      '</ul>',
+    ].join(''),
+    created_at: '2026-07-28',
+    image: '/images/wp_kvgh.jpg',
+  },
+  {
+    id: 1201,
+    sub_satellite_id: 12,
+    title: 'HOLMES 廣告平台與 Creative360 素材引擎',
+    summary: 'CLICKFORCE 域動行銷｜Digital Marketing · MarTech',
+    content: [
+      '<p>HOLMES 整合 SSP（供應方平台）與 DSP（需求方平台），支援程式化廣告交易，協助媒體與廣告主實現高效曝光與精準投放；2025 年推出 AI 驅動的 Creative360，優化廣告素材的生成與投遞效率。</p>',
+      '<ul>',
+      '<li>負責 SSP、DSP 平台的前端開發與維護，與 PM 及 UX/UI 設計師合作，持續優化使用流程與操作體驗。</li>',
+      '<li>從零參與新產品 Creative360 的前端開發，負責介面切版與樣式，並與後端協作 API 串接與資料整合，確保系統順利上線。</li>',
+      '</ul>',
+    ].join(''),
+    created_at: '2025-03-28',
+    image: '/images/wp_clickforce.png',
+    tags: ['Vue', 'Nuxt.js', 'Tailwindcss', 'Element UI', 'Ant Design'],
   },
 ]
 
