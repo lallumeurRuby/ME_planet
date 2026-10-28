@@ -31,3 +31,6 @@ export const SATELLITE_RADIUS = 0.95
 export const MOON_ORBIT_RADIUS = 1.55
 export const ME_RADIUS = 2.3
 export const SYSTEM_RADIUS = ORBIT_RADII[1] + MOON_ORBIT_RADIUS + SATELLITE_RADIUS
+
+/** 每幀時間上限：暫停（Modal 開啟）後恢復的第一幀 dt 會等於整段暫停時間，限制後動畫才不會瞬間跳位 */
+export const clampDelta = (dt: number) => Math.min(dt, 0.1)

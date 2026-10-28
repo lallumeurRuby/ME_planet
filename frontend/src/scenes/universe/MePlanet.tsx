@@ -2,12 +2,13 @@
 
 import { type ThreeEvent, useFrame } from '@react-three/fiber'
 import { useLayoutEffect, useMemo, useRef } from 'react'
-import { Group, Object3D, SphereGeometry, Vector3 } from 'three'
+import { Color, Group, InstancedMesh, Object3D, SphereGeometry, Vector3 } from 'three'
 
 import { Glow } from './Backdrop'
-import { ME_RADIUS } from './registry'
+import { clampDelta, ME_RADIUS } from './registry'
 
 const LAND_RADIUS = 2.36
+const PUFFS_PER_CLOUD = 4
 const onSurface = (lat: number, lon: number, radius: number) => new Vector3().setFromSphericalCoords(radius, lat, lon)
 
 /** 讓物件立在球面上（局部 Y 軸朝外） */
@@ -60,7 +61,7 @@ export function MePlanet({ spin, onSelect }: { spin: number; onSelect: () => voi
     () =>
       Array.from({ length: 9 }, () => ({
         position: onSurface(0.9 + Math.random() * 1.1, Math.random() * Math.PI * 2, 2.75),
-        puffs: Array.from({ length: 4 }, (_, j) => ({
+        puffs: Array.from({ length: PUFFS_PER_CLOUD }, (_, j) => ({
           radius: 0.16 + Math.random() * 0.12,
           position: [j * 0.18 - 0.27, Math.random() * 0.08, Math.random() * 0.1] as const,
         })),
@@ -68,7 +69,46 @@ export function MePlanet({ spin, onSelect }: { spin: number; onSelect: () => voi
     []
   )
 
-  useFrame((_, dt) => {
+  const treeMesh = useRef<InstancedMesh>(null)
+  const cloudMesh = useRef<InstancedMesh>(null)
+
+  // instance 的 matrix／顏色只在掛載時寫一次
+  useLayoutEffect(() => {
+    const mesh = treeMesh.current
+    if (!mesh) return
+    const dummy = new Object3D()
+    const color = new Color()
+    trees.forEach((tree, i) => {
+      standOn(dummy, tree.lat, tree.lon, 2.5 + 0.1 * tree.scale)
+      dummy.scale.setScalar(tree.scale)
+      dummy.updateMatrix()
+      mesh.setMatrixAt(i, dummy.matrix)
+      mesh.setColorAt(i, color.setHex(tree.color))
+    })
+    mesh.instanceMatrix.needsUpdate = true
+    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true
+    mesh.computeBoundingSphere()
+  }, [trees])
+
+  useLayoutEffect(() => {
+    const mesh = cloudMesh.current
+    if (!mesh) return
+    // 雲團只平移不旋轉（與原本外觀一致）
+    const dummy = new Object3D()
+    cloudPuffs.forEach((cloud, i) => {
+      cloud.puffs.forEach((puff, j) => {
+        dummy.position.set(...puff.position).add(cloud.position)
+        dummy.scale.setScalar(puff.radius)
+        dummy.updateMatrix()
+        mesh.setMatrixAt(i * PUFFS_PER_CLOUD + j, dummy.matrix)
+      })
+    })
+    mesh.instanceMatrix.needsUpdate = true
+    mesh.computeBoundingSphere()
+  }, [cloudPuffs])
+
+  useFrame((_, delta) => {
+    const dt = clampDelta(delta)
     if (planet.current) planet.current.rotation.y += dt * 0.08 * spin
     if (clouds.current) clouds.current.rotation.y += dt * 0.03 * spin
   })
@@ -121,14 +161,11 @@ export function MePlanet({ spin, onSelect }: { spin: number; onSelect: () => voi
           </group>
         ))}
 
-        {trees.map((tree, i) => (
-          <Standing key={i} lat={tree.lat} lon={tree.lon} radius={2.5 + 0.1 * tree.scale}>
-            <mesh>
-              <coneGeometry args={[0.11 * tree.scale, 0.34 * tree.scale, 6]} />
-              <meshStandardMaterial color={tree.color} flatShading {...matte} />
-            </mesh>
-          </Standing>
-        ))}
+        {/* 樹：單一 instancedMesh（1 個 draw call），顏色用 instanceColor */}
+        <instancedMesh ref={treeMesh} args={[undefined, undefined, trees.length]}>
+          <coneGeometry args={[0.11, 0.34, 6]} />
+          <meshStandardMaterial flatShading {...matte} />
+        </instancedMesh>
 
         <Standing lat={0.52} lon={1.2} radius={2.47}>
           <mesh>
@@ -145,17 +182,12 @@ export function MePlanet({ spin, onSelect }: { spin: number; onSelect: () => voi
           </mesh>
         </Standing>
 
+        {/* 雲：所有 puff 合成單一 instancedMesh（單位球 × 半徑縮放） */}
         <group ref={clouds}>
-          {cloudPuffs.map((cloud, i) => (
-            <group key={i} position={cloud.position} onUpdate={(self) => self.lookAt(0, 0, 0)}>
-              {cloud.puffs.map((puff, j) => (
-                <mesh key={j} position={puff.position}>
-                  <sphereGeometry args={[puff.radius, 12, 10]} />
-                  <meshStandardMaterial color={0xffffff} roughness={1} metalness={0} />
-                </mesh>
-              ))}
-            </group>
-          ))}
+          <instancedMesh ref={cloudMesh} args={[undefined, undefined, cloudPuffs.length * PUFFS_PER_CLOUD]}>
+            <sphereGeometry args={[1, 12, 10]} />
+            <meshStandardMaterial color={0xffffff} roughness={1} metalness={0} />
+          </instancedMesh>
         </group>
       </group>
 

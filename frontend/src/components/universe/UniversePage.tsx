@@ -78,6 +78,7 @@ export function UniversePage() {
             subSatellitesBySatellite={subsBySatellite}
             focusedId={focusedId}
             reducedMotion={reducedMotion}
+            paused={!!openSub || mePlanetOpen}
             registry={registry}
             onSelectSatellite={focusSatellite}
             onSelectSubSatellite={setOpenSub}

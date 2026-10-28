@@ -1,5 +1,7 @@
 'use client'
 
+import { useMemo } from 'react'
+
 import { Dialog } from '@/components/ui/Dialog'
 import { getMePlanetContent } from '@/lib/content'
 import { sanitizeRichText, splitLead } from '@/lib/sanitize'
@@ -10,7 +12,11 @@ import styles from './universe.module.css'
 export function MePlanetModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { content } = getMePlanetContent()
   // 第一排：照片（左）＋開頭段落（右）；第二排：其餘內容全寬
-  const [lead, rest] = content ? splitLead(sanitizeRichText(content)) : ['', '']
+  // 只在開啟時才解析 HTML（關閉時 UniversePage 每次 re-render 都不必重算）
+  const [lead, rest] = useMemo(
+    () => (open && content ? splitLead(sanitizeRichText(content)) : ['', '']),
+    [open, content]
+  )
 
   return (
     <Dialog

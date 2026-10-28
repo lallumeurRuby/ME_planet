@@ -4,7 +4,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
 import { PerspectiveCamera, Vector3 } from 'three'
 
-import { SYSTEM_RADIUS, type SceneRegistry } from './registry'
+import { clampDelta, SYSTEM_RADIUS, type SceneRegistry } from './registry'
 
 export const WIDE_BREAKPOINT = 860
 const FOV = 28
@@ -45,7 +45,8 @@ export function CameraRig({ focusedId, registry }: { focusedId: number | null; r
     camera.updateProjectionMatrix()
   }, [camera])
 
-  useFrame((_, dt) => {
+  useFrame((_, delta) => {
+    const dt = clampDelta(delta)
     const focus = focusedId === null ? undefined : registry.satellitePositions.get(focusedId)
     if (focus) {
       // 從公轉軌道的切線方向看衛星：ME Planet 落在畫面一側，不會擋在衛星正後方

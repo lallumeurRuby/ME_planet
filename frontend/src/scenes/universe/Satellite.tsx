@@ -8,7 +8,7 @@ import { Color, Group, Mesh, Vector3 } from 'three'
 import type { SubSatellite } from '@/lib/types'
 
 import { Glow, OrbitLine } from './Backdrop'
-import { MOON_ORBIT_RADIUS, ORBIT_RADII, SATELLITE_RADIUS, type SceneRegistry } from './registry'
+import { clampDelta, MOON_ORBIT_RADIUS, ORBIT_RADII, SATELLITE_RADIUS, type SceneRegistry } from './registry'
 import { planetTexture } from './textures'
 
 interface SatelliteProps {
@@ -73,7 +73,8 @@ export function Satellite({
     }
   }, [registry, satelliteId])
 
-  useFrame((_, dt) => {
+  useFrame((_, delta) => {
+    const dt = clampDelta(delta)
     const o = orbit.current
     // 飛入某顆衛星時：它停住，其他衛星放慢
     if (!isFocused) o.angle += dt * o.speed * spin * (anyFocused ? 0.25 : 1)

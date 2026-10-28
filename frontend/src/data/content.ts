@@ -109,7 +109,7 @@ export const paragraphs: Paragraph[] = [
       '</ul>',
     ].join(''),
     created_at: '2025-03-28',
-    image: '/images/wp_clickforce.png',
+    image: '/images/wp_clickforce.jpg',
     tags: ['Vue', 'Nuxt.js', 'Tailwindcss', 'Element UI', 'Ant Design'],
   },
 ]

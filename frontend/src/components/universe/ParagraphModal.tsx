@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { Dialog } from '@/components/ui/Dialog'
 import { listParagraphs } from '@/lib/content'
@@ -57,6 +57,11 @@ export function ParagraphModal({
 /** 段落以 accordion 呈現：同時只展開一篇，預設展開第一篇；點已展開的標題則全部收合 */
 function ParagraphAccordion({ paragraphs }: { paragraphs: Paragraph[] }) {
   const [openId, setOpenId] = useState<number | null>(paragraphs[0].id)
+  // 淨化結果先算好，展開／收合時不必重新解析 HTML
+  const contentHtml = useMemo(
+    () => new Map(paragraphs.map((p) => [p.id, sanitizeRichText(p.content)])),
+    [paragraphs]
+  )
   const toggle = (id: number) => setOpenId((prev) => (prev === id ? null : id))
 
   return <>{paragraphs.map((paragraph, i) => {
@@ -113,7 +118,7 @@ function ParagraphAccordion({ paragraphs }: { paragraphs: Paragraph[] }) {
               <div>
                 <div
                   className={`rich-text ${styles.content}`}
-                  dangerouslySetInnerHTML={{ __html: sanitizeRichText(paragraph.content) }}
+                  dangerouslySetInnerHTML={{ __html: contentHtml.get(paragraph.id) ?? '' }}
                 />
                 {paragraph.tags && paragraph.tags.length > 0 && (
                   <ul className={styles.tags} aria-label="標籤">

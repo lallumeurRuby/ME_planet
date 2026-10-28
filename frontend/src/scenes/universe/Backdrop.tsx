@@ -4,7 +4,7 @@ import { useFrame } from '@react-three/fiber'
 import { useMemo, useRef } from 'react'
 import { AdditiveBlending, BufferGeometry, Float32BufferAttribute, Group, Points, Vector3 } from 'three'
 
-import { ORBIT_RADII } from './registry'
+import { clampDelta, ORBIT_RADII } from './registry'
 import { glowTexture } from './textures'
 
 /** 光：冷色環境光 + 暖色主光（行星上的金色晨昏線）+ 藍色輪廓光 */
@@ -30,7 +30,8 @@ export function Starfield({ spin }: { spin: number }) {
     g.setAttribute('position', new Float32BufferAttribute(positions, 3))
     return g
   }, [])
-  useFrame((_, dt) => {
+  useFrame((_, delta) => {
+    const dt = clampDelta(delta)
     if (ref.current) ref.current.rotation.y += dt * 0.004 * spin
   })
   return (
@@ -78,7 +79,8 @@ export function OrbitLine({ radius, opacity }: { radius: number; opacity: number
 export function GoldRing({ spin }: { spin: number }) {
   const sparks = useRef<Group>(null)
   const angles = useRef(Array.from({ length: 5 }, (_, i) => (i / 5) * Math.PI * 2))
-  useFrame((_, dt) => {
+  useFrame((_, delta) => {
+    const dt = clampDelta(delta)
     sparks.current?.children.forEach((spark, i) => {
       const a = (angles.current[i] += dt * 0.15 * spin)
       spark.position.set(Math.cos(a) * 3.6, Math.sin(a) * 0.29, Math.sin(a) * 3.6)
