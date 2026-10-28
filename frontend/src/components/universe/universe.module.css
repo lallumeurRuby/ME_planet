@@ -324,7 +324,7 @@
 
 /* ── 段落 Modal ── */
 .paragraphDialog {
-  width: min(660px, calc(100vw - 32px));
+  width: min(1000px, calc(100vw - 32px));
   max-height: min(80vh, 780px);
   display: flex;
   flex-direction: column;
@@ -363,9 +363,6 @@
   padding: 6px 26px 26px;
 }
 /* ── ME Planet Modal：第一排照片＋開頭文字，第二排全寬文字 ── */
-.meDialog {
-  width: min(780px, calc(100vw - 32px));
-}
 .meIntro {
   display: grid;
   grid-template-columns: 200px minmax(0, 1fr);
@@ -551,9 +548,6 @@
   letter-spacing: 0.05em;
 }
 /* 有圖片的段落：左圖右文兩欄，窄螢幕改為上下堆疊 */
-.wideDialog {
-  width: min(1000px, calc(100vw - 32px));
-}
 .paragraphMedia {
   display: grid;
   grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
@@ -581,23 +575,125 @@
 .paragraphImage:hover img {
   transform: scale(1.04);
 }
+/* 外部連結：標題列右側的圓形 ↗ 按鈕（標題本身是 accordion 開關） */
 .titleLink {
-  color: inherit;
-  text-decoration: none;
-  background-image: linear-gradient(var(--color-primary-300), var(--color-primary-300));
-  background-size: 0 1px;
-  background-position: 0 100%;
-  background-repeat: no-repeat;
-  transition: color 0.2s, background-size 0.3s var(--ease-out);
-}
-.titleLink span {
-  font-size: 0.8em;
+  flex: none;
+  align-self: center;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  font-size: 13px;
   color: var(--accent-text);
+  text-decoration: none;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
 }
 .titleLink:hover,
 .titleLink:focus-visible {
   color: var(--color-primary-200);
-  background-size: 100% 1px;
+  border-color: var(--color-primary-300);
+  background: rgba(147, 197, 253, 0.1);
+}
+
+/* ── 段落 accordion ── */
+.paragraphItem header {
+  align-items: flex-start;
+}
+.accordionHeading {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+.accordionTrigger {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.accordionTrigger:hover {
+  color: var(--color-primary-200);
+}
+.accordionTrigger:focus-visible {
+  outline: 2px solid var(--color-primary-300);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+.accordionTrigger .summary {
+  display: block;
+  margin: 4px 0 0;
+  font-family: var(--font-body, inherit);
+  font-weight: 400;
+}
+/* 展開指示：細線箭頭，展開時轉向下 */
+.accordionChevron {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin-top: 3px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  position: relative;
+  transition: transform 0.35s var(--ease-out), border-color 0.2s, background 0.2s;
+}
+.accordionChevron::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translate(-65%, -50%) rotate(-45deg);
+}
+.paragraphItem[data-open='true'] .accordionChevron {
+  transform: rotate(90deg);
+  border-color: var(--color-primary-300);
+  background: rgba(147, 197, 253, 0.1);
+}
+.paragraphItem time {
+  margin-top: 6px;
+}
+/* 內容區：grid-template-rows 0fr↔1fr 做高度動畫；收合後 visibility:hidden 讓內容不可聚焦 */
+.accordionPanel {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition: grid-template-rows 0.35s var(--ease-out), visibility 0s 0.35s;
+}
+.accordionPanel[data-open='true'] {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition: grid-template-rows 0.35s var(--ease-out), visibility 0s;
+}
+.accordionPanel > div {
+  min-height: 0;
+  overflow: hidden;
+}
+.accordionBody {
+  padding: 16px 0 4px 34px;
+}
+@media (max-width: 640px) {
+  .accordionBody {
+    padding-left: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .accordionPanel,
+  .accordionPanel[data-open='true'],
+  .accordionChevron {
+    transition: none;
+  }
 }
 .tags {
   display: flex;

@@ -15,11 +15,53 @@ export const satellites: Satellite[] = [
 
 // 產品管理、閱讀書庫暫無子衛星
 export const subSatellites: SubSatellite[] = [
-  { id: 11, satellite_id: 1, name: 'AIxBDD' },
   { id: 12, satellite_id: 1, name: '工作專案' },
+  { id: 21, satellite_id: 2, name: '產品探索' },
 ]
 
 export const paragraphs: Paragraph[] = [
+  {
+    id: 2101,
+    sub_satellite_id: 21,
+    title: '創新的用途理論（JTBD 框架）',
+    summary: null,
+    content: [
+      '<p><strong>核心概念：</strong>用途（Job）是某人在特定情境下，雇用產品或服務，以達成其追求的進步（Progress）。</p>',
+
+      '<h3>1. 特定情境（Circumstances）</h3>',
+      '<p>理解顧客在什麼情境下產生需求，以及為什麼決定雇用或持續使用產品。</p>',
+      '<ul>',
+      '<li><strong>大雇用（Big Hire）｜When buy：</strong>顧客決定購買、採用或轉換產品的時刻。</li>',
+      '<li><strong>小雇用（Little Hire）｜When use：</strong>顧客實際使用產品的時刻，決定是否持續雇用。</li>',
+      '</ul>',
+
+      '<h3>2. 分析因素｜四股力量（Four Forces of Progress）</h3>',
+      '<p>影響顧客是否改變既有行為、雇用新產品的四種力量。</p>',
+      '<table><thead><tr><th>因素</th><th>說明</th><th>作用</th></tr></thead><tbody>',
+      '<tr><td>推力（Push）</td><td>現有情境或解決方案帶來的不滿</td><td>促進改變</td></tr>',
+      '<tr><td>拉力（Pull）</td><td>新解決方案帶來的吸引力</td><td>促進改變</td></tr>',
+      '<tr><td>焦慮（Anxiety）</td><td>對新方案的不確定性、風險或成本的擔憂</td><td>阻礙改變</td></tr>',
+      '<tr><td>慣性（Habit）</td><td>對現有習慣或解決方案的依賴</td><td>阻礙改變</td></tr>',
+      '</tbody></table>',
+
+      '<h3>3. 追求的進步（Desired Progress）</h3>',
+      '<p>顧客真正想達成的目標，不只是完成某項功能。</p>',
+      '<ul>',
+      '<li><strong>功能性（Functional）：</strong>完成任務、解決實際問題，例如節省時間。</li>',
+      '<li><strong>情感性（Emotional）：</strong>獲得期望的心理感受，例如安心、成就感。</li>',
+      '<li><strong>社會性（Social）：</strong>建立期望的社會形象或人際關係，例如獲得認同。</li>',
+      '</ul>',
+
+      '<h3>4. 產品創新的關鍵</h3>',
+      '<ul>',
+      '<li><strong>理解情境：</strong>找出顧客在什麼情況下產生改變的動機。</li>',
+      '<li><strong>分析阻力：</strong>強化推力與拉力，降低焦慮與慣性。</li>',
+      '<li><strong>定義進步：</strong>從顧客真正想達成的進步出發，而非從產品功能出發。</li>',
+      '<li><strong>辨識競爭者：</strong>競爭者不一定是同類產品，而是所有能協助顧客完成相同用途的替代方案。</li>',
+      '</ul>',
+    ].join(''),
+    created_at: '2026-10-28',
+  },
     {
     id: 1203,
     sub_satellite_id: 12,

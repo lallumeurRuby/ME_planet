@@ -2,7 +2,10 @@
  * 段落 content 是擁有者編輯的 HTML（rich text）。公開頁面顯示前只保留編輯器會產生的標籤，
  * 移除 script、事件屬性與其他標籤，避免 HTML 注入。
  */
-const ALLOWED_TAGS = new Set(['P', 'BR', 'B', 'STRONG', 'I', 'EM', 'U', 'UL', 'OL', 'LI', 'H3', 'DIV', 'SPAN'])
+const ALLOWED_TAGS = new Set([
+  'P', 'BR', 'B', 'STRONG', 'I', 'EM', 'U', 'UL', 'OL', 'LI', 'H3', 'DIV', 'SPAN',
+  'TABLE', 'THEAD', 'TBODY', 'TR', 'TH', 'TD',
+])
 
 export function sanitizeRichText(html: string): string {
   if (typeof window === 'undefined') return ''

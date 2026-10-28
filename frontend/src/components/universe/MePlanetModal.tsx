@@ -17,7 +17,7 @@ export function MePlanetModal({ open, onClose }: { open: boolean; onClose: () =>
       open={open}
       onClose={onClose}
       labelledBy="me-planet-modal-title"
-      className={`${styles.paragraphDialog} ${styles.meDialog}`}
+      className={styles.paragraphDialog}
     >
       <div className={styles.modalHead}>
         <span className={`${styles.modalPlanet} ${styles.modalMePlanet}`} />
