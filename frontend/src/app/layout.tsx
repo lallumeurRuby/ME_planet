@@ -14,7 +14,7 @@ const notoSerif = Noto_Serif_TC({ weight: ['500', '600'], variable: '--font-noto
 const notoSans = Noto_Sans_TC({ weight: ['300', '400', '500'], variable: '--font-noto-sans', display: 'swap', preload: false })
 
 export const metadata: Metadata = {
-  title: 'ME Planet',
+  title: 'Ruby Oz',
   description: '我的知識衛星宇宙',
 }
 
